@@ -3,6 +3,7 @@ import path from 'node:path';
 import {detectReportChanges} from './changes.js';
 import {loadConfig, loadWatchConfig} from './config.js';
 import {GitHubClient} from './github.js';
+import {findLinkedPullRequests} from './linked-prs.js';
 import {findBountyAmount} from './money.js';
 import {formatChangesMessage, sendTelegramMessage} from './notify.js';
 import {renderMarkdownReport} from './report.js';
@@ -94,6 +95,7 @@ async function scanRepository(client, repoConfig, defaults) {
   const queries = repoConfig.queries?.length ? repoConfig.queries : ['bounty'];
   const maxIssuesPerQuery = repoConfig.maxIssuesPerQuery ?? defaults.maxIssuesPerQuery ?? 25;
   const includeClosed = repoConfig.includeClosed ?? defaults.includeClosed ?? false;
+  const linkedPullRequestDetection = repoConfig.linkedPullRequestDetection ?? defaults.linkedPullRequestDetection ?? 'both';
   const seen = new Set();
   const candidates = [];
 
@@ -113,11 +115,13 @@ async function scanRepository(client, repoConfig, defaults) {
       const bounty = findBountyAmount(`${issue.title}\n\n${issue.body ?? ''}`);
       if (!bounty) continue;
 
-      const pullRequests = await client.searchPullRequestsForIssue({
+      const linkedPullRequests = await findLinkedPullRequests(client, {
         fullName,
         issueNumber: issue.number,
         issueUrl: issue.html_url,
+        strategy: linkedPullRequestDetection,
       });
+      const pullRequests = linkedPullRequests.pullRequests;
 
       const candidate = {
         repository: fullName,
@@ -132,12 +136,15 @@ async function scanRepository(client, repoConfig, defaults) {
         currency: bounty.currency,
         rawAmount: bounty.raw,
         pullRequestCount: pullRequests.length,
+        pullRequestDetection: linkedPullRequestDetection,
+        pullRequestDetectionWarnings: linkedPullRequests.warnings,
         pullRequests: pullRequests.map((pr) => ({
           number: pr.number,
           title: pr.title,
-          url: pr.html_url,
+          url: pr.url,
           state: pr.state,
-          updatedAt: pr.updated_at,
+          updatedAt: pr.updatedAt,
+          detectionSources: pr.detectionSources,
         })),
       };
 

@@ -11,7 +11,8 @@
   },
   "defaults": {
     "maxIssuesPerQuery": 20,
-    "includeClosed": false
+    "includeClosed": false,
+    "linkedPullRequestDetection": "both"
   },
   "filters": {
     "minAmount": 100,

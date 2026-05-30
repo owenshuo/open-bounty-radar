@@ -1,5 +1,11 @@
 const GITHUB_API = 'https://api.github.com';
 
+function splitFullName(fullName) {
+  const [owner, repo] = fullName.split('/');
+  if (!owner || !repo) throw new Error(`Invalid GitHub repository full name: ${fullName}`);
+  return [owner, repo];
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -71,33 +77,47 @@ export class GitHubClient {
   }
 
   async getPullRequest({fullName, number}) {
-    const [owner, repo] = fullName.split('/');
+    const [owner, repo] = splitFullName(fullName);
     return this.request(`/repos/${owner}/${repo}/pulls/${number}`);
   }
 
   async listIssueComments({fullName, number, perPage = 20}) {
-    const [owner, repo] = fullName.split('/');
+    const [owner, repo] = splitFullName(fullName);
     return this.request(`/repos/${owner}/${repo}/issues/${number}/comments`, {
       per_page: perPage,
     });
   }
 
   async listPullRequestReviews({fullName, number, perPage = 20}) {
-    const [owner, repo] = fullName.split('/');
+    const [owner, repo] = splitFullName(fullName);
     return this.request(`/repos/${owner}/${repo}/pulls/${number}/reviews`, {
       per_page: perPage,
     });
   }
 
+  async listIssueTimeline({fullName, number, perPage = 100}) {
+    const [owner, repo] = splitFullName(fullName);
+    return this.request(`/repos/${owner}/${repo}/issues/${number}/timeline`, {
+      per_page: perPage,
+    });
+  }
+
+  async listTimelinePullRequestsForIssue({fullName, number, perPage = 100}) {
+    const timeline = await this.listIssueTimeline({fullName, number, perPage});
+    return timeline
+      .map((event) => event.source?.issue)
+      .filter((issue) => issue?.pull_request && issue.html_url?.includes(`/${fullName}/pull/`));
+  }
+
   async listCheckRuns({fullName, ref, perPage = 100}) {
-    const [owner, repo] = fullName.split('/');
+    const [owner, repo] = splitFullName(fullName);
     return this.request(`/repos/${owner}/${repo}/commits/${ref}/check-runs`, {
       per_page: perPage,
     });
   }
 
   async getCombinedStatus({fullName, ref}) {
-    const [owner, repo] = fullName.split('/');
+    const [owner, repo] = splitFullName(fullName);
     return this.request(`/repos/${owner}/${repo}/commits/${ref}/status`);
   }
 }

@@ -20,7 +20,8 @@ This project turns that manual research into a repeatable scan and report.
 - Scans configured GitHub repositories with GitHub Search API
 - Detects bounty amounts such as `$250`, `$6k`, `/bounty $6000`, and `250 USDC`
 - Filters closed issues by default
-- Searches for pull requests that mention or link each issue
+- Searches for pull requests that mention each issue
+- Reads GitHub issue timeline cross-references to catch linked PRs search can miss
 - Scores candidates by bounty amount, freshness, open state, and PR competition
 - Writes Markdown and optional JSON reports
 - Watches submitted pull requests for merge/close state, checks, reviews, and maintainer comments
@@ -84,7 +85,8 @@ Create a JSON config:
   },
   "defaults": {
     "maxIssuesPerQuery": 20,
-    "includeClosed": false
+    "includeClosed": false,
+    "linkedPullRequestDetection": "both"
   },
   "filters": {
     "minAmount": 100,
@@ -178,6 +180,8 @@ The score is intentionally simple:
 - open issues score higher than closed ones
 - each linked or mentioned PR reduces score
 
+Linked PR detection supports `search`, `timeline`, or `both`. The default `both` mode merges GitHub Search results with issue timeline cross-references, then de-duplicates by PR URL.
+
 This is not meant to decide for you. It is meant to triage quickly.
 
 ## Roadmap
@@ -188,7 +192,6 @@ This is not meant to decide for you. It is meant to triage quickly.
 - GitHub Actions scheduled reports
 - Email, Discord, and GitHub issue notifications
 - Local web dashboard
-- Better linked PR detection via GraphQL timeline data
 - Maintainer assignment and winner-detection heuristics
 
 ## Ethics

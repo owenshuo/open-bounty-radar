@@ -6,7 +6,10 @@ function prSummary(candidate) {
   if (candidate.pullRequestCount === 0) return '0 linked/mentioned PRs';
   const prs = candidate.pullRequests
     .slice(0, 3)
-    .map((pr) => `[#${pr.number}](${pr.url})`)
+    .map((pr) => {
+      const sources = pr.detectionSources?.length ? ` (${pr.detectionSources.join('+')})` : '';
+      return `[#${pr.number}](${pr.url})${sources}`;
+    })
     .join(', ');
   return `${candidate.pullRequestCount} PR(s): ${prs}`;
 }
@@ -71,6 +74,8 @@ export function renderMarkdownReport(report) {
     lines.push(`- State: ${candidate.state}`);
     lines.push(`- Labels: ${candidate.labels.length ? candidate.labels.join(', ') : 'none'}`);
     lines.push(`- Competition: ${prSummary(candidate)}`);
+    lines.push(`- PR detection: ${candidate.pullRequestDetection ?? 'search'}`);
+    if (candidate.pullRequestDetectionWarnings?.length) lines.push(`- PR detection warnings: ${candidate.pullRequestDetectionWarnings.join('; ')}`);
     lines.push(`- Score breakdown: ${JSON.stringify(candidate.score)}`);
     lines.push('');
   }
