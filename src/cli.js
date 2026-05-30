@@ -1,7 +1,7 @@
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {detectReportChanges} from './changes.js';
-import {loadConfig, loadWatchConfig} from './config.js';
+import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
 import {GitHubClient} from './github.js';
 import {findLinkedPullRequests} from './linked-prs.js';
 import {findBountyAmount} from './money.js';
@@ -31,6 +31,7 @@ function printHelp() {
   console.log(`Open Bounty Radar
 
 Usage:
+  open-bounty-radar radar --config ./examples/radar.json
   open-bounty-radar scan --config ./examples/config.json --out ./reports/bounty-report.md
   open-bounty-radar watch --config ./examples/watchlist.json --out ./reports/pr-watch.md
 
@@ -288,12 +289,51 @@ async function runWatch(parsed) {
   if (parsed.json) console.log(`JSON report: ${path.resolve(parsed.json)}`);
 }
 
+function sectionParsed(command, section, fallback) {
+  return {
+    command,
+    config: section.config,
+    out: section.out ?? fallback.out,
+    json: section.json ?? fallback.json ?? null,
+    state: section.state ?? null,
+    notify: Boolean(section.notify),
+  };
+}
+
+async function runRadar(parsed) {
+  const config = await loadRadarConfig(parsed.config);
+  const enabledSections = [];
+
+  if (config.scan?.enabled !== false) {
+    enabledSections.push('scan');
+    await runScan(
+      sectionParsed('scan', config.scan, {
+        out: './reports/bounty-report.md',
+        json: './reports/bounty-report.json',
+      }),
+    );
+  }
+
+  if (config.watch?.enabled !== false) {
+    enabledSections.push('watch');
+    await runWatch(
+      sectionParsed('watch', config.watch, {
+        out: './reports/pr-watch.md',
+        json: './reports/pr-watch.json',
+      }),
+    );
+  }
+
+  console.log(`Radar run complete: ${enabledSections.join(' + ')}`);
+}
+
 export async function runCli(args) {
   const parsed = parseArgs(args);
   if (!parsed.command || parsed.command === 'help') {
     printHelp();
     return;
   }
+  if (parsed.command === 'radar') return runRadar(parsed);
   if (parsed.command === 'scan') return runScan(parsed);
   if (parsed.command === 'watch') return runWatch(parsed);
   throw new Error(`Unknown command: ${parsed.command}`);

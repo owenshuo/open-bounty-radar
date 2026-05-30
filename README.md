@@ -34,19 +34,27 @@ This project turns that manual research into a repeatable scan and report.
 git clone https://github.com/<your-user>/open-bounty-radar.git
 cd open-bounty-radar
 npm test
-npm run scan
+npm run radar
 ```
 
-To monitor already-submitted pull requests:
+`npm run radar` reads `examples/radar.json`, then runs both configured jobs:
+
+- scan open bounty candidates
+- watch already-submitted pull requests
+
+Outputs are written to `reports/` by default.
+
+To run each job separately:
 
 ```bash
+npm run scan
 npm run watch
 ```
 
-To detect changes between runs and send Telegram notifications:
+To enable Telegram notifications without adding CLI flags, set `notifications.telegram.enabled` to `true` in `examples/config.json` and/or `examples/watchlist.json`, then run:
 
 ```bash
-npm run watch:notify
+npm run radar
 ```
 
 For higher rate limits, set a GitHub token:
@@ -68,6 +76,35 @@ npm run scan
 ```
 
 ## Configuration
+
+The recommended one-command entrypoint is `examples/radar.json`:
+
+```json
+{
+  "scan": {
+    "enabled": true,
+    "config": "./examples/config.json",
+    "out": "./reports/bounty-report.md",
+    "json": "./reports/bounty-report.json"
+  },
+  "watch": {
+    "enabled": true,
+    "config": "./examples/watchlist.json",
+    "out": "./reports/pr-watch.md",
+    "json": "./reports/pr-watch.json"
+  }
+}
+```
+
+Run it with:
+
+```bash
+npm run radar
+```
+
+You can disable either section by setting `"enabled": false`.
+
+### Scan Config
 
 Create a JSON config:
 
@@ -116,6 +153,8 @@ node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./rep
 
 ## Watching Pull Requests
 
+### Watch Config
+
 Create a watchlist:
 
 ```json
@@ -163,7 +202,25 @@ export TELEGRAM_BOT_TOKEN=123456:your_bot_token
 export TELEGRAM_CHAT_ID=123456789
 ```
 
-Run with notifications:
+Run with notifications by turning on Telegram in the JSON config:
+
+```json
+{
+  "notifications": {
+    "telegram": {
+      "enabled": true
+    }
+  }
+}
+```
+
+Then use the normal one-command entrypoint:
+
+```bash
+npm run radar
+```
+
+You can also force notification mode from the CLI:
 
 ```bash
 node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --state ./reports/radar-state.json --notify

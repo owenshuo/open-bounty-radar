@@ -36,3 +36,19 @@ export async function loadWatchConfig(configPath) {
 
   return config;
 }
+
+export async function loadRadarConfig(configPath) {
+  const config = await loadJsonConfig(configPath);
+
+  if (!config.scan && !config.watch) {
+    throw new Error('Radar config must include scan, watch, or both.');
+  }
+
+  for (const sectionName of ['scan', 'watch']) {
+    const section = config[sectionName];
+    if (!section || section.enabled === false) continue;
+    if (!section.config) throw new Error(`Radar ${sectionName} section must include a config path.`);
+  }
+
+  return config;
+}
