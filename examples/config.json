@@ -1,0 +1,34 @@
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "defaults": {
+    "maxIssuesPerQuery": 20,
+    "includeClosed": false
+  },
+  "filters": {
+    "minAmount": 100,
+    "excludeKeywords": [
+      "marketing",
+      "hardware",
+      "ios only",
+      "android only"
+    ]
+  },
+  "repositories": [
+    {
+      "owner": "Expensify",
+      "repo": "App",
+      "queries": [
+        "$ in:title,body label:External",
+        "bounty in:title,body label:External"
+      ]
+    },
+    {
+      "owner": "orchestration-agent",
+      "repo": "AgentOrchestration",
+      "queries": [
+        "bounty in:body",
+        "$ in:title,body"
+      ]
+    }
+  ]
+}

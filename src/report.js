@@ -1,0 +1,68 @@
+function money(candidate) {
+  return `${candidate.currency} ${candidate.amount.toLocaleString('en-US')}`;
+}
+
+function prSummary(candidate) {
+  if (candidate.pullRequestCount === 0) return '0 linked/mentioned PRs';
+  const prs = candidate.pullRequests
+    .slice(0, 3)
+    .map((pr) => `[#${pr.number}](${pr.url})`)
+    .join(', ');
+  return `${candidate.pullRequestCount} PR(s): ${prs}`;
+}
+
+export function renderMarkdownReport(report) {
+  const lines = [
+    '# Open Bounty Radar Report',
+    '',
+    `Generated: ${report.generatedAt}`,
+    '',
+    `Repositories: ${report.repositories.join(', ')}`,
+    '',
+    `Candidates: ${report.candidates.length}`,
+    '',
+  ];
+
+  if (report.candidates.length === 0) {
+    lines.push('No bounty candidates matched the current filters.', '');
+    if (report.errors?.length) {
+      lines.push('## Scan Warnings', '');
+      for (const error of report.errors) {
+        lines.push(`- ${error.repository}: ${error.message.split('\n')[0]}`);
+      }
+      lines.push('');
+    }
+    return lines.join('\n');
+  }
+
+  lines.push('| Score | Bounty | Issue | Competition | Updated |');
+  lines.push('| ---: | --- | --- | --- | --- |');
+  for (const candidate of report.candidates) {
+    lines.push(
+      `| ${candidate.score.total} | ${money(candidate)} | [${candidate.repository}#${candidate.number}: ${candidate.title.replaceAll('|', '\\|')}](${candidate.url}) | ${prSummary(candidate)} | ${candidate.updatedAt.slice(0, 10)} |`,
+    );
+  }
+
+  lines.push('', '## Details', '');
+  for (const candidate of report.candidates) {
+    lines.push(`### ${candidate.repository}#${candidate.number}`);
+    lines.push('');
+    lines.push(`- Title: [${candidate.title}](${candidate.url})`);
+    lines.push(`- Bounty: ${money(candidate)} (${candidate.rawAmount})`);
+    lines.push(`- State: ${candidate.state}`);
+    lines.push(`- Labels: ${candidate.labels.length ? candidate.labels.join(', ') : 'none'}`);
+    lines.push(`- Competition: ${prSummary(candidate)}`);
+    lines.push(`- Score breakdown: ${JSON.stringify(candidate.score)}`);
+    lines.push('');
+  }
+
+  if (report.errors?.length) {
+    lines.push('## Scan Warnings', '');
+    for (const error of report.errors) {
+      lines.push(`- ${error.repository}: ${error.message.split('\n')[0]}`);
+    }
+    lines.push('');
+  }
+
+  return `${lines.join('\n')}\n`;
+}
