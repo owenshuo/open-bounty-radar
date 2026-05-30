@@ -69,4 +69,35 @@ export class GitHubClient {
 
     return [...byUrl.values()];
   }
+
+  async getPullRequest({fullName, number}) {
+    const [owner, repo] = fullName.split('/');
+    return this.request(`/repos/${owner}/${repo}/pulls/${number}`);
+  }
+
+  async listIssueComments({fullName, number, perPage = 20}) {
+    const [owner, repo] = fullName.split('/');
+    return this.request(`/repos/${owner}/${repo}/issues/${number}/comments`, {
+      per_page: perPage,
+    });
+  }
+
+  async listPullRequestReviews({fullName, number, perPage = 20}) {
+    const [owner, repo] = fullName.split('/');
+    return this.request(`/repos/${owner}/${repo}/pulls/${number}/reviews`, {
+      per_page: perPage,
+    });
+  }
+
+  async listCheckRuns({fullName, ref, perPage = 100}) {
+    const [owner, repo] = fullName.split('/');
+    return this.request(`/repos/${owner}/${repo}/commits/${ref}/check-runs`, {
+      per_page: perPage,
+    });
+  }
+
+  async getCombinedStatus({fullName, ref}) {
+    const [owner, repo] = fullName.split('/');
+    return this.request(`/repos/${owner}/${repo}/commits/${ref}/status`);
+  }
 }

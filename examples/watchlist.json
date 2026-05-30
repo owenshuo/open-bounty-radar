@@ -1,0 +1,14 @@
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "defaults": {
+    "activityLimit": 5
+  },
+  "pullRequests": [
+    {
+      "owner": "spaceandtimefdn",
+      "repo": "sxt-proof-of-sql",
+      "number": 1986,
+      "label": "Example watched bounty PR"
+    }
+  ]
+}

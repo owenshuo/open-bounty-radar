@@ -23,6 +23,7 @@ This project turns that manual research into a repeatable scan and report.
 - Searches for pull requests that mention or link each issue
 - Scores candidates by bounty amount, freshness, open state, and PR competition
 - Writes Markdown and optional JSON reports
+- Watches submitted pull requests for merge/close state, checks, reviews, and maintainer comments
 
 ## Quick Start
 
@@ -31,6 +32,12 @@ git clone https://github.com/<your-user>/open-bounty-radar.git
 cd open-bounty-radar
 npm test
 npm run scan
+```
+
+To monitor already-submitted pull requests:
+
+```bash
+npm run watch
 ```
 
 For higher rate limits, set a GitHub token:
@@ -77,6 +84,35 @@ Then run:
 ```bash
 node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json
 ```
+
+## Watching Pull Requests
+
+Create a watchlist:
+
+```json
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "defaults": {
+    "activityLimit": 5
+  },
+  "pullRequests": [
+    {
+      "owner": "spaceandtimefdn",
+      "repo": "sxt-proof-of-sql",
+      "number": 1986,
+      "label": "Example watched bounty PR"
+    }
+  ]
+}
+```
+
+Then run:
+
+```bash
+node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json
+```
+
+The watch report highlights PRs that need attention because they were closed, have failing checks, or received maintainer/owner activity.
 
 ## Scoring
 

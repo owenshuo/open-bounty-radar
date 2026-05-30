@@ -21,14 +21,6 @@
         "$ in:title,body label:External",
         "bounty in:title,body label:External"
       ]
-    },
-    {
-      "owner": "orchestration-agent",
-      "repo": "AgentOrchestration",
-      "queries": [
-        "bounty in:body",
-        "$ in:title,body"
-      ]
     }
   ]
 }
