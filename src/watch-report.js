@@ -10,6 +10,22 @@ function checksText(checks) {
   return `failing (${checks.failing}/${checks.total})`;
 }
 
+function appendChanges(lines, report) {
+  if (!report.changeSummary) return;
+
+  lines.push('## Changes', '');
+  if (report.changeSummary.firstRun) lines.push(`State initialized: ${report.changeSummary.statePath}`, '');
+  if (!report.changes?.length) {
+    lines.push('No changes detected since the previous state snapshot.', '');
+    return;
+  }
+
+  for (const change of report.changes) {
+    lines.push(`- [${change.repository}#${change.number}](${change.url}) ${change.title} (${change.severity}): ${change.reasons.join('; ')}`);
+  }
+  lines.push('');
+}
+
 export function renderWatchReport(report) {
   const lines = [
     '# Open Bounty Radar PR Watch Report',
@@ -32,6 +48,8 @@ export function renderWatchReport(report) {
     }
     lines.push('');
   }
+
+  appendChanges(lines, report);
 
   const attention = report.pullRequests.filter((item) => item.needsAttention);
   lines.push('## Needs Attention', '');

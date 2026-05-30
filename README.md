@@ -24,6 +24,8 @@ This project turns that manual research into a repeatable scan and report.
 - Scores candidates by bounty amount, freshness, open state, and PR competition
 - Writes Markdown and optional JSON reports
 - Watches submitted pull requests for merge/close state, checks, reviews, and maintainer comments
+- Stores state snapshots and detects meaningful changes between runs
+- Sends Telegram notifications for detected changes
 
 ## Quick Start
 
@@ -40,10 +42,18 @@ To monitor already-submitted pull requests:
 npm run watch
 ```
 
+To detect changes between runs and send Telegram notifications:
+
+```bash
+npm run watch:notify
+```
+
 For higher rate limits, set a GitHub token:
 
 ```bash
 export GITHUB_TOKEN=github_pat_xxx
+export TELEGRAM_BOT_TOKEN=123456:your_bot_token
+export TELEGRAM_CHAT_ID=123456789
 npm run scan
 ```
 
@@ -51,6 +61,8 @@ On Windows PowerShell:
 
 ```powershell
 $env:GITHUB_TOKEN="github_pat_xxx"
+$env:TELEGRAM_BOT_TOKEN="123456:your_bot_token"
+$env:TELEGRAM_CHAT_ID="123456789"
 npm run scan
 ```
 
@@ -61,6 +73,15 @@ Create a JSON config:
 ```json
 {
   "githubTokenEnv": "GITHUB_TOKEN",
+  "statePath": "./reports/radar-state.json",
+  "notifications": {
+    "notifyOnFirstRun": false,
+    "telegram": {
+      "enabled": false,
+      "botTokenEnv": "TELEGRAM_BOT_TOKEN",
+      "chatIdEnv": "TELEGRAM_CHAT_ID"
+    }
+  },
   "defaults": {
     "maxIssuesPerQuery": 20,
     "includeClosed": false
@@ -85,6 +106,12 @@ Then run:
 node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json
 ```
 
+Add `--state` to compare this run with the previous run:
+
+```bash
+node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --state ./reports/radar-state.json
+```
+
 ## Watching Pull Requests
 
 Create a watchlist:
@@ -92,6 +119,15 @@ Create a watchlist:
 ```json
 {
   "githubTokenEnv": "GITHUB_TOKEN",
+  "statePath": "./reports/radar-state.json",
+  "notifications": {
+    "notifyOnFirstRun": false,
+    "telegram": {
+      "enabled": false,
+      "botTokenEnv": "TELEGRAM_BOT_TOKEN",
+      "chatIdEnv": "TELEGRAM_CHAT_ID"
+    }
+  },
   "defaults": {
     "activityLimit": 5
   },
@@ -114,6 +150,25 @@ node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out .
 
 The watch report highlights PRs that need attention because they were closed, have failing checks, or received maintainer/owner activity.
 
+## Telegram Notifications
+
+Telegram notifications are change-based. The first run creates a baseline state file, then later runs notify only when something meaningful changes.
+
+Required environment variables:
+
+```bash
+export TELEGRAM_BOT_TOKEN=123456:your_bot_token
+export TELEGRAM_CHAT_ID=123456789
+```
+
+Run with notifications:
+
+```bash
+node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --state ./reports/radar-state.json --notify
+```
+
+To enable notifications from config instead of passing `--notify`, set `notifications.telegram.enabled` to `true`.
+
 ## Scoring
 
 The score is intentionally simple:
@@ -131,9 +186,8 @@ This is not meant to decide for you. It is meant to triage quickly.
 - Opire adapter
 - Gitpay and other bounty platform adapters
 - GitHub Actions scheduled reports
-- Email, Telegram, Discord, and GitHub issue notifications
+- Email, Discord, and GitHub issue notifications
 - Local web dashboard
-- Watchlist mode for already-submitted PRs
 - Better linked PR detection via GraphQL timeline data
 - Maintainer assignment and winner-detection heuristics
 

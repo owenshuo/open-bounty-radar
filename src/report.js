@@ -11,6 +11,22 @@ function prSummary(candidate) {
   return `${candidate.pullRequestCount} PR(s): ${prs}`;
 }
 
+function appendChanges(lines, report) {
+  if (!report.changeSummary) return;
+
+  lines.push('## Changes', '');
+  if (report.changeSummary.firstRun) lines.push(`State initialized: ${report.changeSummary.statePath}`, '');
+  if (!report.changes?.length) {
+    lines.push('No changes detected since the previous state snapshot.', '');
+    return;
+  }
+
+  for (const change of report.changes) {
+    lines.push(`- [${change.repository}#${change.number}](${change.url}) ${change.title} (${change.severity}): ${change.reasons.join('; ')}`);
+  }
+  lines.push('');
+}
+
 export function renderMarkdownReport(report) {
   const lines = [
     '# Open Bounty Radar Report',
@@ -25,6 +41,7 @@ export function renderMarkdownReport(report) {
 
   if (report.candidates.length === 0) {
     lines.push('No bounty candidates matched the current filters.', '');
+    appendChanges(lines, report);
     if (report.errors?.length) {
       lines.push('## Scan Warnings', '');
       for (const error of report.errors) {
@@ -34,6 +51,8 @@ export function renderMarkdownReport(report) {
     }
     return lines.join('\n');
   }
+
+  appendChanges(lines, report);
 
   lines.push('| Score | Bounty | Issue | Competition | Updated |');
   lines.push('| ---: | --- | --- | --- | --- |');

@@ -1,5 +1,14 @@
 {
   "githubTokenEnv": "GITHUB_TOKEN",
+  "statePath": "./reports/radar-state.json",
+  "notifications": {
+    "notifyOnFirstRun": false,
+    "telegram": {
+      "enabled": false,
+      "botTokenEnv": "TELEGRAM_BOT_TOKEN",
+      "chatIdEnv": "TELEGRAM_CHAT_ID"
+    }
+  },
   "defaults": {
     "maxIssuesPerQuery": 20,
     "includeClosed": false

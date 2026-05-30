@@ -1,20 +1,25 @@
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {detectReportChanges} from './changes.js';
 import {loadConfig, loadWatchConfig} from './config.js';
 import {GitHubClient} from './github.js';
 import {findBountyAmount} from './money.js';
+import {formatChangesMessage, sendTelegramMessage} from './notify.js';
 import {renderMarkdownReport} from './report.js';
 import {scoreCandidate} from './score.js';
+import {loadState, saveState, updateStateSnapshot} from './state.js';
 import {classifyPullRequest, latestActivity, needsAttention, summarizeChecks} from './watch.js';
 import {renderWatchReport} from './watch-report.js';
 
 function parseArgs(args) {
-  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null};
+  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, state: null, notify: false};
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--config') parsed.config = args[++index];
     else if (arg === '--out') parsed.out = args[++index];
     else if (arg === '--json') parsed.json = args[++index];
+    else if (arg === '--state') parsed.state = args[++index];
+    else if (arg === '--notify') parsed.notify = true;
     else if (arg === '--help' || arg === '-h') parsed.command = 'help';
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -32,11 +37,56 @@ Options:
   --config <path>  JSON config file. Default: bounty-radar.config.json
   --out <path>     Markdown report path. Default: bounty-report.md
   --json <path>    Optional machine-readable JSON report path.
+  --state <path>   Optional state snapshot path for change detection.
+  --notify         Send Telegram notification for detected changes.
 `);
 }
 
 async function ensureParent(filePath) {
   await mkdir(path.dirname(path.resolve(filePath)), {recursive: true});
+}
+
+async function applyStateAndNotifications({kind, report, parsed, config}) {
+  const notifications = config.notifications ?? {};
+  const telegram = notifications.telegram ?? {};
+  const statePath = parsed.state ?? config.statePath ?? (parsed.notify || telegram.enabled ? './reports/open-bounty-radar-state.json' : null);
+  if (!statePath) return report;
+
+  const previousState = await loadState(statePath);
+  const detected = detectReportChanges(kind, report, previousState, {
+    notifyOnFirstRun: Boolean(notifications.notifyOnFirstRun),
+  });
+  const nextReport = {
+    ...report,
+    changes: detected.changes,
+    changeSummary: {
+      firstRun: detected.firstRun,
+      statePath: path.resolve(statePath),
+    },
+  };
+
+  const shouldNotify = parsed.notify || telegram.enabled;
+  if (shouldNotify && detected.changes.length) {
+    const botTokenEnv = telegram.botTokenEnv ?? 'TELEGRAM_BOT_TOKEN';
+    const chatIdEnv = telegram.chatIdEnv ?? 'TELEGRAM_CHAT_ID';
+    const botToken = process.env[botTokenEnv];
+    const chatId = process.env[chatIdEnv];
+    if (!botToken || !chatId) throw new Error(`Telegram notification requested but ${botTokenEnv} or ${chatIdEnv} is not set.`);
+
+    await sendTelegramMessage({
+      botToken,
+      chatId,
+      text: formatChangesMessage({kind, generatedAt: report.generatedAt, changes: detected.changes}),
+    });
+    console.log(`Sent Telegram notification for ${detected.changes.length} change(s).`);
+  }
+
+  await saveState(statePath, updateStateSnapshot(previousState, kind, detected.snapshot));
+
+  if (detected.firstRun && !detected.changes.length) console.log(`Initialized ${kind} state at ${path.resolve(statePath)}.`);
+  else console.log(`Detected ${detected.changes.length} ${kind} change(s).`);
+
+  return nextReport;
 }
 
 async function scanRepository(client, repoConfig, defaults) {
@@ -169,12 +219,13 @@ async function runScan(parsed) {
     })
     .sort((left, right) => right.score.total - left.score.total || right.amount - left.amount);
 
-  const report = {
+  const baseReport = {
     generatedAt: new Date().toISOString(),
     candidates: filtered,
     repositories: config.repositories.map((repo) => `${repo.owner}/${repo.repo}`),
     errors,
   };
+  const report = await applyStateAndNotifications({kind: 'scan', report: baseReport, parsed, config});
 
   await ensureParent(parsed.out);
   await writeFile(parsed.out, renderMarkdownReport(report), 'utf8');
@@ -210,11 +261,12 @@ async function runWatch(parsed) {
     }
   }
 
-  const report = {
+  const baseReport = {
     generatedAt: new Date().toISOString(),
     pullRequests: pullRequests.sort((left, right) => Number(right.needsAttention) - Number(left.needsAttention) || Date.parse(right.updatedAt) - Date.parse(left.updatedAt)),
     errors,
   };
+  const report = await applyStateAndNotifications({kind: 'watch', report: baseReport, parsed, config});
 
   await ensureParent(parsed.out);
   await writeFile(parsed.out, renderWatchReport(report), 'utf8');
