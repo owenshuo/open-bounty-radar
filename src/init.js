@@ -73,8 +73,8 @@ export function renderInitResult(result) {
 
   lines.push('', 'Next steps:');
   lines.push('- Edit bounty-radar.config.json and bounty-radar.watchlist.json');
-  lines.push('- Run: node ./bin/open-bounty-radar.js validate --config ./bounty-radar.json');
-  lines.push('- Run: node ./bin/open-bounty-radar.js radar --config ./bounty-radar.json');
+  lines.push('- Run: npm run validate');
+  lines.push('- Run: npm run radar');
 
   return `${lines.join('\n')}\n`;
 }

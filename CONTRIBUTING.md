@@ -17,8 +17,10 @@ The project intentionally keeps the MVP dependency-light. Please avoid adding a 
 Useful focused commands:
 
 ```bash
-npm run scan
-npm run watch
+npm run validate:example
+npm run radar:example
+npm run scan:example
+npm run watch:example
 ```
 
 ## Good first contributions

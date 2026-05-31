@@ -4,7 +4,7 @@ Open Bounty Radar uses JSON files so routine runs can stay one-command.
 
 ## Recommended Entrypoint
 
-Use `examples/radar.json` with:
+Create local config files and run the local radar profile with:
 
 ```bash
 npm run init
@@ -12,20 +12,20 @@ npm run validate
 npm run radar
 ```
 
-The radar config points to the scan and watch configs:
+The generated `bounty-radar.json` points to local scan and watch configs:
 
 ```json
 {
   "scan": {
     "enabled": true,
-    "config": "./examples/config.json",
+    "config": "./bounty-radar.config.json",
     "out": "./reports/bounty-report.md",
     "json": "./reports/bounty-report.json",
     "html": "./reports/bounty-report.html"
   },
   "watch": {
     "enabled": true,
-    "config": "./examples/watchlist.json",
+    "config": "./bounty-radar.watchlist.json",
     "out": "./reports/pr-watch.md",
     "json": "./reports/pr-watch.json",
     "html": "./reports/pr-watch.html"
@@ -53,7 +53,7 @@ Each enabled job can write:
 
 ## Scan Config
 
-`examples/config.json` controls bounty discovery.
+`bounty-radar.config.json` controls bounty discovery. It is generated from `examples/config.json`.
 
 Important fields:
 
@@ -68,7 +68,7 @@ Important fields:
 
 ## Watch Config
 
-`examples/watchlist.json` controls submitted PR monitoring.
+`bounty-radar.watchlist.json` controls submitted PR monitoring. It is generated from `examples/watchlist.json`.
 
 Important fields:
 
@@ -98,3 +98,10 @@ $env:TELEGRAM_CHAT_ID="123456789"
 - `examples/radar.minimal.json`: scan-only starter profile.
 - `examples/radar.json`: default scan + watch profile.
 - `examples/radar.full.json`: explicit full profile for copying into local configs.
+
+You can run the examples directly with:
+
+```bash
+npm run validate:example
+npm run radar:example
+```

@@ -58,6 +58,6 @@ test('renders init result with next steps', () => {
   });
 
   assert.match(output, /Local config initialization complete/);
-  assert.match(output, /validate --config/);
+  assert.match(output, /npm run validate/);
   assert.match(output, /already exists/);
 });

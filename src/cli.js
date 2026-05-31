@@ -16,11 +16,15 @@ import {classifyPullRequest, latestActivity, needsAttention, summarizeChecks} fr
 import {renderWatchReport} from './watch-report.js';
 
 function parseArgs(args) {
-  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, html: null, state: null, notify: false, force: false};
+  const parsed = {command: args[0], config: null, out: 'bounty-report.md', json: null, html: null, state: null, notify: false, force: false};
+  let configProvided = false;
   if (args[0] === '--help' || args[0] === '-h') parsed.command = 'help';
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
-    if (arg === '--config') parsed.config = args[++index];
+    if (arg === '--config') {
+      parsed.config = args[++index];
+      configProvided = true;
+    }
     else if (arg === '--out') parsed.out = args[++index];
     else if (arg === '--json') parsed.json = args[++index];
     else if (arg === '--html') parsed.html = args[++index];
@@ -30,7 +34,14 @@ function parseArgs(args) {
     else if (arg === '--help' || arg === '-h') parsed.command = 'help';
     else throw new Error(`Unknown argument: ${arg}`);
   }
+  if (!configProvided) parsed.config = defaultConfigPath(parsed.command);
   return parsed;
+}
+
+function defaultConfigPath(command) {
+  if (command === 'radar' || command === 'validate') return 'bounty-radar.json';
+  if (command === 'watch') return 'bounty-radar.watchlist.json';
+  return 'bounty-radar.config.json';
 }
 
 function printHelp() {
@@ -38,13 +49,13 @@ function printHelp() {
 
 Usage:
   open-bounty-radar init
-  open-bounty-radar radar --config ./examples/radar.json
-  open-bounty-radar validate --config ./examples/radar.json
-  open-bounty-radar scan --config ./examples/config.json --out ./reports/bounty-report.md
-  open-bounty-radar watch --config ./examples/watchlist.json --out ./reports/pr-watch.md
+  open-bounty-radar radar
+  open-bounty-radar validate
+  open-bounty-radar scan --out ./reports/bounty-report.md
+  open-bounty-radar watch --out ./reports/pr-watch.md
 
 Options:
-  --config <path>  JSON config file. Default: bounty-radar.config.json
+  --config <path>  JSON config file. Defaults to local bounty-radar files.
   --out <path>     Markdown report path. Default: bounty-report.md
   --json <path>    Optional machine-readable JSON report path.
   --html <path>    Optional static HTML report path.
