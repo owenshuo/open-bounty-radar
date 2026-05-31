@@ -67,6 +67,13 @@ Competition is detected through:
 
 The default `both` mode merges these results and de-duplicates by PR URL.
 
+Reports include linked PR details for each candidate:
+
+- PR number and title
+- state
+- last update date
+- detection source, such as `search`, `timeline`, or `search+timeline`
+
 ## Future Scoring Inputs
 
 Good future improvements:

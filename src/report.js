@@ -21,6 +21,15 @@ function tagSummary(tags) {
   return tags.map((item) => `${item.name}: ${item.detail}`).join('; ');
 }
 
+function prDetails(candidate) {
+  if (!candidate.pullRequests?.length) return ['  - none'];
+  return candidate.pullRequests.map((pr) => {
+    const sources = pr.detectionSources?.length ? pr.detectionSources.join('+') : 'unknown';
+    const updated = pr.updatedAt ? pr.updatedAt.slice(0, 10) : 'unknown';
+    return `  - [#${pr.number}: ${pr.title}](${pr.url}) - ${pr.state} - ${updated} - ${sources}`;
+  });
+}
+
 function appendChanges(lines, report) {
   if (!report.changeSummary) return;
 
@@ -103,6 +112,8 @@ export function renderMarkdownReport(report) {
     lines.push(`- Why: ${tagSummary(candidate.analysis?.reasonTags)}`);
     lines.push(`- Risks: ${tagSummary(candidate.analysis?.riskTags)}`);
     lines.push(`- Competition: ${prSummary(candidate)}`);
+    lines.push('- Linked PR details:');
+    lines.push(...prDetails(candidate));
     lines.push(`- PR detection: ${candidate.pullRequestDetection ?? 'search'}`);
     if (candidate.pullRequestDetectionWarnings?.length) lines.push(`- PR detection warnings: ${candidate.pullRequestDetectionWarnings.join('; ')}`);
     lines.push(`- Score breakdown: ${JSON.stringify(candidate.score)}`);

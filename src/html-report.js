@@ -67,6 +67,42 @@ function topCandidatesHtml(candidates) {
     .join('')}</ul>`;
 }
 
+function linkedPullRequestsHtml(candidate) {
+  if (!candidate.pullRequests?.length) return '<p class="muted">No linked or mentioned PRs found.</p>';
+
+  const rows = candidate.pullRequests
+    .map((pr) => {
+      const sources = pr.detectionSources?.length ? pr.detectionSources.join('+') : 'unknown';
+      return `
+        <tr>
+          <td><a href="${escapeHtml(pr.url)}">#${escapeHtml(pr.number)}</a></td>
+          <td>${escapeHtml(pr.title)}</td>
+          <td>${escapeHtml(pr.state)}</td>
+          <td>${escapeHtml(dateOnly(pr.updatedAt))}</td>
+          <td>${escapeHtml(sources)}</td>
+        </tr>`;
+    })
+    .join('');
+
+  return `<table><thead><tr><th>PR</th><th>Title</th><th>State</th><th>Updated</th><th>Source</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function competitionDetailsHtml(candidates) {
+  if (!candidates.length) return '';
+
+  return `
+    <h2>Competition Details</h2>
+    ${candidates
+      .map(
+        (candidate) => `
+          <section>
+            <h3><a href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a></h3>
+            ${linkedPullRequestsHtml(candidate)}
+          </section>`,
+      )
+      .join('')}`;
+}
+
 function page({title, generatedAt, summary, body}) {
   return `<!doctype html>
 <html lang="en">
@@ -183,6 +219,7 @@ export function renderScanHtmlReport(report) {
         ? `<table><thead><tr><th>Score</th><th>Recommendation</th><th>Bounty</th><th>Issue</th><th>Competition</th><th>Risks</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
         : '<p class="muted">No bounty candidates matched the current filters.</p>'
     }
+    ${competitionDetailsHtml(report.candidates)}
   `;
 
   return page({

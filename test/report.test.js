@@ -18,7 +18,16 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
         currency: 'USD',
         rawAmount: '$500',
         pullRequestCount: 2,
-        pullRequests: [],
+        pullRequests: [
+          {
+            number: 2,
+            title: 'Competing fix',
+            url: 'https://github.com/owner/repo/pull/2',
+            state: 'open',
+            updatedAt: '2026-01-02T00:00:00Z',
+            detectionSources: ['search', 'timeline'],
+          },
+        ],
         pullRequestDetection: 'both',
         updatedAt: '2026-01-01T00:00:00Z',
         score: {total: 30},
@@ -37,4 +46,7 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
   assert.match(markdown, /risky/);
   assert.match(markdown, /some-competition/);
   assert.match(markdown, /solid-reward/);
+  assert.match(markdown, /Linked PR details/);
+  assert.match(markdown, /Competing fix/);
+  assert.match(markdown, /search\+timeline/);
 });

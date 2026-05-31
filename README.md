@@ -25,6 +25,7 @@ This project turns that manual research into a repeatable scan and report.
 - Scores candidates by bounty amount, freshness, open state, and PR competition
 - Adds recommendation and risk tags such as `strong`, `risky`, `crowded`, and `special-requirements`
 - Highlights top candidates so the report opens with the most actionable issues
+- Shows linked PR competition details with state, update date, and detection source
 - Writes Markdown and optional JSON reports
 - Watches submitted pull requests for merge/close state, checks, reviews, and maintainer comments
 - Stores state snapshots and detects meaningful changes between runs

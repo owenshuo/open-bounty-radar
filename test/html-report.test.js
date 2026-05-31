@@ -14,7 +14,17 @@ test('renders scan HTML reports with escaped content', () => {
         url: 'https://github.com/owner/repo/issues/1',
         amount: 500,
         currency: 'USD',
-        pullRequestCount: 0,
+        pullRequestCount: 1,
+        pullRequests: [
+          {
+            number: 2,
+            title: '<b>competing</b>',
+            url: 'https://github.com/owner/repo/pull/2',
+            state: 'open',
+            updatedAt: '2026-01-02T00:00:00Z',
+            detectionSources: ['timeline'],
+          },
+        ],
         updatedAt: '2026-01-01T00:00:00Z',
         score: {total: 42},
         analysis: {
@@ -32,6 +42,8 @@ test('renders scan HTML reports with escaped content', () => {
   assert.match(html, /<!doctype html>/);
   assert.match(html, /Open Bounty Radar Report/);
   assert.match(html, /Top Candidates/);
+  assert.match(html, /Competition Details/);
+  assert.match(html, /&lt;b&gt;competing&lt;\/b&gt;/);
   assert.match(html, /strong/);
   assert.match(html, /no-repro-signal/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
