@@ -6,7 +6,7 @@ Open Bounty Radar is intentionally small, local-first, and dependency-light. The
 
 ### Setup Diagnostics
 
-Add a `doctor` command that checks:
+The `doctor` command checks:
 
 - Node.js version
 - GitHub token presence

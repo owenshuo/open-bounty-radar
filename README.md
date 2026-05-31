@@ -51,6 +51,7 @@ git clone https://github.com/<your-user>/open-bounty-radar.git
 cd open-bounty-radar
 npm test
 npm run init
+npm run doctor
 npm run validate
 npm run radar
 ```
@@ -61,6 +62,8 @@ npm run radar
 - watch already-submitted pull requests
 
 Markdown, JSON, and static HTML reports are written to `reports/` by default.
+
+`npm run doctor` checks your Node.js version, config files, output directories, token setup, and GitHub API connectivity.
 
 `npm run validate` checks the radar config and referenced scan/watch configs without making GitHub API calls.
 
@@ -76,10 +79,11 @@ Local config files are ignored by git so you can customize them safely.
 
 1. Run `npm run init` to create local config files.
 2. Edit `bounty-radar.config.json` and add repositories or search queries you care about.
-3. Run `npm run validate` to catch config mistakes without using GitHub API calls.
-4. Run `npm run radar` to create Markdown, JSON, and HTML reports.
-5. Open `reports/bounty-report.html` and start with the Top Candidates section.
-6. Add submitted PRs to `bounty-radar.watchlist.json`, then keep using `npm run radar` to monitor them.
+3. Run `npm run doctor` to confirm the local environment and GitHub API access.
+4. Run `npm run validate` to catch config mistakes without using GitHub API calls.
+5. Run `npm run radar` to create Markdown, JSON, and HTML reports.
+6. Open `reports/bounty-report.html` and start with the Top Candidates section.
+7. Add submitted PRs to `bounty-radar.watchlist.json`, then keep using `npm run radar` to monitor them.
 
 See [Demo Output](docs/demo-output.md) for a compact example of the generated reports.
 
@@ -176,6 +180,7 @@ Development/demo commands that run directly from `examples/` are also available:
 
 ```bash
 npm run validate:example
+npm run doctor:example
 npm run radar:example
 ```
 

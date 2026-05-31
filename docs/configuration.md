@@ -8,6 +8,7 @@ Create local config files and run the local radar profile with:
 
 ```bash
 npm run init
+npm run doctor
 npm run validate
 npm run radar
 ```
@@ -36,6 +37,8 @@ The generated `bounty-radar.json` points to local scan and watch configs:
 Set `"enabled": false` to turn off either job.
 
 `npm run validate` checks this file and the referenced scan/watch config files without calling the GitHub API.
+
+`npm run doctor` checks the same config plus the local runtime, output directories, token setup, and GitHub API connectivity.
 
 `npm run init` creates local config files:
 
@@ -103,5 +106,6 @@ You can run the examples directly with:
 
 ```bash
 npm run validate:example
+npm run doctor:example
 npm run radar:example
 ```

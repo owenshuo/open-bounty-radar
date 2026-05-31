@@ -9,5 +9,6 @@ test('prints help from top-level --help', async () => {
   const {stdout} = await execFileAsync(process.execPath, ['./bin/open-bounty-radar.js', '--help']);
   assert.match(stdout, /Open Bounty Radar/);
   assert.match(stdout, /validate/);
+  assert.match(stdout, /doctor/);
   assert.match(stdout, /init/);
 });

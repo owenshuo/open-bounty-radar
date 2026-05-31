@@ -12,6 +12,7 @@ import {formatChangesMessage, sendTelegramMessage} from './notify.js';
 import {renderMarkdownReport} from './report.js';
 import {scoreCandidate} from './score.js';
 import {loadState, saveState, updateStateSnapshot} from './state.js';
+import {inspectEnvironment, renderDoctorResult} from './doctor.js';
 import {renderValidationResult, validateRadarConfig} from './validate.js';
 import {classifyPullRequest, latestActivity, needsAttention, summarizeChecks} from './watch.js';
 import {renderWatchReport} from './watch-report.js';
@@ -51,6 +52,7 @@ function printHelp() {
 Usage:
   open-bounty-radar init
   open-bounty-radar radar
+  open-bounty-radar doctor
   open-bounty-radar validate
   open-bounty-radar scan --out ./reports/bounty-report.md
   open-bounty-radar watch --out ./reports/pr-watch.md
@@ -67,6 +69,7 @@ Options:
 Commands:
   init      Create local config files from examples.
   radar     Run enabled scan/watch jobs from one radar config.
+  doctor    Check local environment, config files, output paths, and GitHub API access.
   validate  Validate configs without calling the GitHub API.
   scan      Scan configured repositories for bounty candidates.
   watch     Watch configured pull requests for status changes.
@@ -379,6 +382,12 @@ async function runValidate(parsed) {
   if (!result.valid) throw new Error('Configuration validation failed.');
 }
 
+async function runDoctor(parsed) {
+  const result = await inspectEnvironment(parsed.config);
+  console.log(renderDoctorResult(result));
+  if (!result.ok) throw new Error('Doctor checks failed.');
+}
+
 async function runInit(parsed) {
   const result = await initializeLocalConfig({force: parsed.force});
   console.log(renderInitResult(result));
@@ -392,6 +401,7 @@ export async function runCli(args) {
   }
   if (parsed.command === 'init') return runInit(parsed);
   if (parsed.command === 'radar') return runRadar(parsed);
+  if (parsed.command === 'doctor') return runDoctor(parsed);
   if (parsed.command === 'validate') return runValidate(parsed);
   if (parsed.command === 'scan') return runScan(parsed);
   if (parsed.command === 'watch') return runWatch(parsed);
