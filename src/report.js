@@ -1,3 +1,5 @@
+import {topCandidates} from './candidate-ranking.js';
+
 function money(candidate) {
   return `${candidate.currency} ${candidate.amount.toLocaleString('en-US')}`;
 }
@@ -35,6 +37,24 @@ function appendChanges(lines, report) {
   lines.push('');
 }
 
+function appendTopCandidates(lines, candidates) {
+  const top = topCandidates(candidates);
+  lines.push('## Top Candidates', '');
+  if (!top.length) {
+    lines.push('No recommended candidates to highlight.', '');
+    return;
+  }
+
+  for (const candidate of top) {
+    const reasons = tagSummary(candidate.analysis?.reasonTags);
+    const risks = tagSummary(candidate.analysis?.riskTags);
+    lines.push(`- [${candidate.repository}#${candidate.number}](${candidate.url}) ${candidate.analysis?.recommendation ?? 'unknown'} / score ${candidate.score.total} / ${money(candidate)}`);
+    lines.push(`  - Why: ${reasons}`);
+    lines.push(`  - Risks: ${risks}`);
+  }
+  lines.push('');
+}
+
 export function renderMarkdownReport(report) {
   const lines = [
     '# Open Bounty Radar Report',
@@ -61,6 +81,7 @@ export function renderMarkdownReport(report) {
   }
 
   appendChanges(lines, report);
+  appendTopCandidates(lines, report.candidates);
 
   lines.push('| Score | Recommendation | Bounty | Issue | Competition | Risks | Updated |');
   lines.push('| ---: | --- | --- | --- | --- | --- | --- |');

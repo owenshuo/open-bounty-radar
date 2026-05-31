@@ -31,6 +31,7 @@ test('renders scan HTML reports with escaped content', () => {
 
   assert.match(html, /<!doctype html>/);
   assert.match(html, /Open Bounty Radar Report/);
+  assert.match(html, /Top Candidates/);
   assert.match(html, /strong/);
   assert.match(html, /no-repro-signal/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);

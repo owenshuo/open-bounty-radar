@@ -1,3 +1,5 @@
+import {topCandidates} from './candidate-ranking.js';
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -44,6 +46,25 @@ function changeList(report) {
     .join('');
 
   return `<ul class="plain-list">${items}</ul>`;
+}
+
+function topCandidatesHtml(candidates) {
+  const top = topCandidates(candidates);
+  if (!top.length) return '<p class="muted">No recommended candidates to highlight.</p>';
+
+  return `<ul class="plain-list">${top
+    .map(
+      (candidate) => `
+        <li>
+          <a href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a>
+          <span class="pill ${candidate.analysis?.recommendation === 'strong' ? 'low' : candidate.analysis?.recommendation === 'risky' ? 'medium' : ''}">${escapeHtml(candidate.analysis?.recommendation ?? 'unknown')}</span>
+          <span class="muted">score ${escapeHtml(candidate.score.total)} / ${escapeHtml(money(candidate))}</span>
+          <div>${escapeHtml(candidate.title)}</div>
+          <div class="muted">Why: ${escapeHtml((candidate.analysis?.reasonTags ?? []).map((item) => item.name).join(', ') || 'none')}</div>
+          <div class="muted">Risks: ${escapeHtml((candidate.analysis?.riskTags ?? []).map((item) => item.name).join(', ') || 'none')}</div>
+        </li>`,
+    )
+    .join('')}</ul>`;
 }
 
 function page({title, generatedAt, summary, body}) {
@@ -154,6 +175,8 @@ export function renderScanHtmlReport(report) {
   const body = `
     <h2>Changes</h2>
     ${changeList(report)}
+    <h2>Top Candidates</h2>
+    ${topCandidatesHtml(report.candidates)}
     <h2>Candidates</h2>
     ${
       rows

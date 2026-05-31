@@ -33,6 +33,7 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
   });
 
   assert.match(markdown, /Recommendation/);
+  assert.match(markdown, /Top Candidates/);
   assert.match(markdown, /risky/);
   assert.match(markdown, /some-competition/);
   assert.match(markdown, /solid-reward/);

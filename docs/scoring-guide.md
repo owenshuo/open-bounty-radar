@@ -87,3 +87,16 @@ Always inspect the issue before starting work. A high score can still be a poor 
 - a competing PR is already approved
 - the task needs an unavailable paid product or device
 - the issue is vague enough to invite rejection
+
+## Top Candidates
+
+Reports include a `Top Candidates` section. It ranks candidates by:
+
+- recommendation strength
+- score
+- bounty amount
+- number of risk tags
+- linked PR competition
+- freshness
+
+Skipped candidates are excluded from the top list.
