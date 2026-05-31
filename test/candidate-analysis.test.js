@@ -65,3 +65,17 @@ test('marks modest competition as watch', () => {
   assert.equal(analysis.action, 'watch');
   assert.ok(analysis.riskTags.some((item) => item.name === 'some-competition' && item.severity === 'low'));
 });
+
+test('escalates candidates when competing PR analysis is strong', () => {
+  const analysis = analyzeCandidate(
+    candidate({
+      pullRequestCount: 1,
+      competition: {summary: {risk: 'high', strong: 1, winner: 0, active: 0}},
+    }),
+    {text: 'Steps to reproduce\nExpected result\nActual result'},
+  );
+
+  assert.equal(analysis.recommendation, 'risky');
+  assert.equal(analysis.action, 'manual-review');
+  assert.ok(analysis.riskTags.some((item) => item.name === 'strong-competing-pr' && item.severity === 'high'));
+});

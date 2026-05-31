@@ -1,18 +1,39 @@
 {
   "githubTokenEnv": "GITHUB_TOKEN",
   "statePath": "./reports/radar-state.json",
+  "workspacePath": "./reports/workspace.json",
   "notifications": {
     "notifyOnFirstRun": false,
+    "rules": {
+      "preset": "quiet",
+      "minSeverity": "medium",
+      "actions": ["act-now", "manual-review", "fix-ci", "reply"],
+      "minAmount": 100
+    },
     "telegram": {
       "enabled": false,
       "botTokenEnv": "TELEGRAM_BOT_TOKEN",
       "chatIdEnv": "TELEGRAM_CHAT_ID"
+    },
+    "webhook": {
+      "enabled": false,
+      "urlEnv": "OPEN_BOUNTY_RADAR_WEBHOOK_URL"
+    },
+    "discord": {
+      "enabled": false,
+      "urlEnv": "DISCORD_WEBHOOK_URL"
+    },
+    "slack": {
+      "enabled": false,
+      "urlEnv": "SLACK_WEBHOOK_URL"
     }
   },
   "defaults": {
-    "maxIssuesPerQuery": 20,
+    "maxIssuesPerQuery": 3,
     "includeClosed": false,
-    "linkedPullRequestDetection": "both"
+    "linkedPullRequestDetection": "both",
+    "competitionDetails": true,
+    "competitionDetailLimit": 5
   },
   "filters": {
     "minAmount": 100,
@@ -27,6 +48,9 @@
     {
       "owner": "Expensify",
       "repo": "App",
+      "presets": [
+        "external"
+      ],
       "queries": [
         "$ in:title,body label:External",
         "bounty in:title,body label:External"

@@ -70,6 +70,27 @@ test('reports invalid linked pull request detection strategies', async () => {
   );
 });
 
+test('reports invalid search presets', async () => {
+  await withConfigFiles(
+    {
+      'scan.json': {
+        repositories: [{owner: 'owner', repo: 'repo', presets: ['bounty', 'made-up']}],
+      },
+      'radar.json': {
+        scan: {config: null},
+      },
+    },
+    async (dir) => {
+      const radarPath = path.join(dir, 'radar.json');
+      await writeFile(radarPath, JSON.stringify({scan: {config: path.join(dir, 'scan.json')}}), 'utf8');
+
+      const result = await validateRadarConfig(radarPath, {env: {GITHUB_TOKEN: 'token'}});
+      assert.equal(result.valid, false);
+      assert.match(result.errors.join('\n'), /invalid preset/);
+    },
+  );
+});
+
 test('reports Telegram environment errors when notifications are enabled', async () => {
   await withConfigFiles(
     {
@@ -90,6 +111,51 @@ test('reports Telegram environment errors when notifications are enabled', async
       assert.equal(result.valid, false);
       assert.match(result.errors.join('\n'), /TELEGRAM_BOT_TOKEN/);
       assert.match(result.errors.join('\n'), /TELEGRAM_CHAT_ID/);
+    },
+  );
+});
+
+test('reports Discord and Slack webhook environment errors when enabled', async () => {
+  await withConfigFiles(
+    {
+      'scan.json': {
+        githubTokenEnv: 'GITHUB_TOKEN',
+        notifications: {discord: {enabled: true}, slack: {enabled: true}},
+        repositories: [{owner: 'owner', repo: 'repo', queries: ['bounty']}],
+      },
+    },
+    async (dir) => {
+      const radarPath = path.join(dir, 'radar.json');
+      await writeFile(radarPath, JSON.stringify({scan: {config: path.join(dir, 'scan.json')}}), 'utf8');
+
+      const result = await validateRadarConfig(radarPath, {env: {GITHUB_TOKEN: 'token'}});
+
+      assert.equal(result.valid, false);
+      assert.match(result.errors.join('\n'), /DISCORD_WEBHOOK_URL/);
+      assert.match(result.errors.join('\n'), /SLACK_WEBHOOK_URL/);
+    },
+  );
+});
+
+test('reports invalid notification rule presets and live URLs', async () => {
+  await withConfigFiles(
+    {
+      'scan.json': {
+        githubTokenEnv: 'GITHUB_TOKEN',
+        notifications: {rules: {preset: 'magic'}},
+        repositories: [{owner: 'owner', repo: 'repo', queries: ['bounty']}],
+        algora: {liveUrl: 'not-a-url'},
+      },
+    },
+    async (dir) => {
+      const radarPath = path.join(dir, 'radar.json');
+      await writeFile(radarPath, JSON.stringify({scan: {config: path.join(dir, 'scan.json')}}), 'utf8');
+
+      const result = await validateRadarConfig(radarPath, {env: {GITHUB_TOKEN: 'token'}});
+
+      assert.equal(result.valid, false);
+      assert.match(result.errors.join('\n'), /notifications\.rules\.preset/);
+      assert.match(result.errors.join('\n'), /algora\.liveUrl/);
     },
   );
 });

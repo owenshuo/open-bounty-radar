@@ -1,5 +1,7 @@
 import path from 'node:path';
 import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
+import {availableNotificationRulePresets} from './notification-rules.js';
+import {availableSearchPresets, invalidRepositoryPresets} from './search-presets.js';
 
 const LINKED_PR_DETECTION = new Set(['search', 'timeline', 'both']);
 
@@ -9,6 +11,15 @@ function outputWarnings(sectionName, section) {
     ['out', '.md'],
     ['json', '.json'],
     ['html', '.html'],
+    ['dashboard', '.html'],
+    ['watchDashboard', '.html'],
+    ['csv', '.csv'],
+    ['jsonl', '.jsonl'],
+    ['actionPlan', '.md'],
+    ['watchlistSuggestions', '.json'],
+    ['history', '.jsonl'],
+    ['workspace', '.json'],
+    ['workspaceImport', '.json'],
   ];
 
   for (const [field, extension] of expected) {
@@ -18,7 +29,7 @@ function outputWarnings(sectionName, section) {
     }
   }
 
-  if (!section.out && !section.json && !section.html) {
+  if (!section.out && !section.json && !section.html && !section.dashboard) {
     warnings.push(`${sectionName} has no report output configured.`);
   }
 
@@ -29,6 +40,10 @@ function notificationIssues(config, label, env = process.env) {
   const warnings = [];
   const errors = [];
   const githubTokenEnv = config.githubTokenEnv ?? 'GITHUB_TOKEN';
+  const rulePreset = config.notifications?.rules?.preset;
+  if (rulePreset && !availableNotificationRulePresets().includes(rulePreset)) {
+    errors.push(`${label}: notifications.rules.preset "${rulePreset}" is invalid. Available presets: ${availableNotificationRulePresets().join(', ')}.`);
+  }
 
   if (githubTokenEnv && !env[githubTokenEnv]) {
     warnings.push(`${label}: ${githubTokenEnv} is not set; GitHub API rate limits will be lower.`);
@@ -40,6 +55,24 @@ function notificationIssues(config, label, env = process.env) {
     const chatIdEnv = telegram.chatIdEnv ?? 'TELEGRAM_CHAT_ID';
     if (!env[botTokenEnv]) errors.push(`${label}: Telegram is enabled but ${botTokenEnv} is not set.`);
     if (!env[chatIdEnv]) errors.push(`${label}: Telegram is enabled but ${chatIdEnv} is not set.`);
+  }
+
+  const webhook = config.notifications?.webhook;
+  if (webhook?.enabled) {
+    const urlEnv = webhook.urlEnv ?? 'OPEN_BOUNTY_RADAR_WEBHOOK_URL';
+    if (!webhook.url && !env[urlEnv]) errors.push(`${label}: webhook is enabled but neither notifications.webhook.url nor ${urlEnv} is set.`);
+  }
+
+  const discord = config.notifications?.discord;
+  if (discord?.enabled) {
+    const urlEnv = discord.urlEnv ?? 'DISCORD_WEBHOOK_URL';
+    if (!discord.url && !env[urlEnv]) errors.push(`${label}: Discord is enabled but neither notifications.discord.url nor ${urlEnv} is set.`);
+  }
+
+  const slack = config.notifications?.slack;
+  if (slack?.enabled) {
+    const urlEnv = slack.urlEnv ?? 'SLACK_WEBHOOK_URL';
+    if (!slack.url && !env[urlEnv]) errors.push(`${label}: Slack is enabled but neither notifications.slack.url nor ${urlEnv} is set.`);
   }
 
   return {warnings, errors};
@@ -66,6 +99,22 @@ function validateScanConfig(config, configPath, env) {
     if (repository.queries && !Array.isArray(repository.queries)) {
       errors.push(`scan config ${configPath}: ${fullName}.queries must be an array when provided.`);
     }
+
+    if (repository.presets && !Array.isArray(repository.presets)) {
+      errors.push(`scan config ${configPath}: ${fullName}.presets must be an array when provided.`);
+    } else {
+      const invalidPresets = invalidRepositoryPresets(repository);
+      if (invalidPresets.length) errors.push(`scan config ${configPath}: ${fullName} has invalid preset(s): ${invalidPresets.join(', ')}. Available presets: ${availableSearchPresets().join(', ')}.`);
+    }
+  }
+
+  for (const platform of ['algora', 'opire']) {
+    const source = config[platform];
+    if (!source) continue;
+    if (!source.listings?.length && !source.listingsPath && !source.listingsUrl && !source.liveUrl) {
+      warnings.push(`scan config ${configPath}: ${platform} adapter is configured without listings, listingsPath, listingsUrl, or liveUrl.`);
+    }
+    if (source.liveUrl && !/^https?:\/\//i.test(source.liveUrl)) errors.push(`scan config ${configPath}: ${platform}.liveUrl must be an http(s) URL.`);
   }
 
   return {warnings, errors};

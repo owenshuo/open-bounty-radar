@@ -1,4 +1,6 @@
 import {topCandidates} from './candidate-ranking.js';
+import {candidateActionSummary, candidateRiskSummary, groupCandidatesByAction} from './candidate-groups.js';
+import {groupWatchItems, watchSummary} from './watch-insights.js';
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -111,6 +113,34 @@ function competitionDetailsHtml(candidates) {
       .join('')}`;
 }
 
+function candidateGroupsHtml(candidates) {
+  const groups = groupCandidatesByAction(candidates);
+  if (!groups.length) return '';
+
+  return `
+    <h2>Action Groups</h2>
+    ${groups
+      .map(
+        (group) => `
+          <section>
+            <h3>${escapeHtml(group.name)} (${escapeHtml(group.candidates.length)})</h3>
+            <ul class="plain-list">
+              ${group.candidates
+                .map(
+                  (candidate) => `
+                    <li>
+                      <a href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a>
+                      <span class="pill">${escapeHtml(candidate.currency)} ${escapeHtml(candidate.amount)}</span>
+                      <span class="muted">score ${escapeHtml(candidate.score.total)} · ${escapeHtml(candidate.analysis?.recommendation ?? 'unknown')}</span>
+                    </li>`,
+                )
+                .join('')}
+            </ul>
+          </section>`,
+      )
+      .join('')}`;
+}
+
 function page({title, generatedAt, summary, body}) {
   return `<!doctype html>
 <html lang="en">
@@ -201,6 +231,8 @@ function page({title, generatedAt, summary, body}) {
 }
 
 export function renderScanHtmlReport(report) {
+  const actionSummary = candidateActionSummary(report.candidates);
+  const riskSummary = candidateRiskSummary(report.candidates);
   const rows = report.candidates
     .map(
       (candidate) => `
@@ -222,6 +254,7 @@ export function renderScanHtmlReport(report) {
     ${changeList(report)}
     <h2>Top Candidates</h2>
     ${topCandidatesHtml(report.candidates)}
+    ${candidateGroupsHtml(report.candidates)}
     <h2>Candidates</h2>
     ${
       rows
@@ -236,6 +269,9 @@ export function renderScanHtmlReport(report) {
     generatedAt: report.generatedAt,
     summary: `
       <div class="metric"><span class="muted">Candidates</span><strong>${escapeHtml(report.candidates.length)}</strong></div>
+      <div class="metric"><span class="muted">Act now</span><strong>${escapeHtml(actionSummary['act-now'])}</strong></div>
+      <div class="metric"><span class="muted">Watch</span><strong>${escapeHtml(actionSummary.watch)}</strong></div>
+      <div class="metric"><span class="muted">High risk</span><strong>${escapeHtml(riskSummary.high)}</strong></div>
       <div class="metric"><span class="muted">Repositories</span><strong>${escapeHtml(report.repositories.length)}</strong></div>
       <div class="metric"><span class="muted">Warnings</span><strong>${escapeHtml(report.errors?.length ?? 0)}</strong></div>
     `,
@@ -245,12 +281,15 @@ export function renderScanHtmlReport(report) {
 
 export function renderWatchHtmlReport(report) {
   const attentionCount = report.pullRequests.filter((item) => item.needsAttention).length;
+  const summary = watchSummary(report.pullRequests);
+  const groups = groupWatchItems(report.pullRequests);
   const rows = report.pullRequests
     .map(
       (item) => `
         <tr>
           <td><span class="pill ${item.needsAttention ? 'high' : 'low'}">${escapeHtml(item.status)}</span></td>
           <td><a href="${escapeHtml(item.url)}">${escapeHtml(item.repository)}#${escapeHtml(item.number)}</a><div>${escapeHtml(item.title)}</div></td>
+          <td>${escapeHtml(item.action ?? 'wait')}</td>
           <td>${escapeHtml(checksText(item.checks))}</td>
           <td>${escapeHtml(dateOnly(item.updatedAt))}</td>
         </tr>`,
@@ -263,8 +302,24 @@ export function renderWatchHtmlReport(report) {
     <h2>Watched Pull Requests</h2>
     ${
       rows
-        ? `<table><thead><tr><th>Status</th><th>PR</th><th>Checks</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
+        ? `<table><thead><tr><th>Status</th><th>PR</th><th>Next Action</th><th>Checks</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
         : '<p class="muted">No pull requests are currently watched.</p>'
+    }
+    <h2>Pull Requests by Status</h2>
+    ${
+      groups.length
+        ? groups
+            .map(
+              (group) => `
+                <section>
+                  <h3>${escapeHtml(group.name)} (${escapeHtml(group.pullRequests.length)})</h3>
+                  <ul class="plain-list">
+                    ${group.pullRequests.map((item) => `<li><a href="${escapeHtml(item.url)}">${escapeHtml(item.repository)}#${escapeHtml(item.number)}</a> <span class="pill">${escapeHtml(item.action ?? 'wait')}</span> ${escapeHtml(item.title)}</li>`).join('')}
+                  </ul>
+                </section>`,
+            )
+            .join('')
+        : '<p class="muted">No pull requests to group.</p>'
     }
   `;
 
@@ -274,6 +329,8 @@ export function renderWatchHtmlReport(report) {
     summary: `
       <div class="metric"><span class="muted">Pull requests</span><strong>${escapeHtml(report.pullRequests.length)}</strong></div>
       <div class="metric"><span class="muted">Needs attention</span><strong>${escapeHtml(attentionCount)}</strong></div>
+      <div class="metric"><span class="muted">Healthy</span><strong>${escapeHtml(summary.healthy)}</strong></div>
+      <div class="metric"><span class="muted">Merged</span><strong>${escapeHtml(summary.merged)}</strong></div>
       <div class="metric"><span class="muted">Warnings</span><strong>${escapeHtml(report.errors?.length ?? 0)}</strong></div>
     `,
     body,

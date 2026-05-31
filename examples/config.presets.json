@@ -1,0 +1,20 @@
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "statePath": "./reports/radar-state.json",
+  "defaults": {
+    "maxIssuesPerQuery": 10,
+    "includeClosed": false,
+    "linkedPullRequestDetection": "both"
+  },
+  "filters": {
+    "minAmount": 100,
+    "excludeKeywords": ["marketing", "hardware"]
+  },
+  "repositories": [
+    {
+      "owner": "Expensify",
+      "repo": "App",
+      "presets": ["bounty", "external", "recent"]
+    }
+  ]
+}

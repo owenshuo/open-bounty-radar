@@ -1,0 +1,46 @@
+name: Open Bounty Radar
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate config
+        env:
+          GITHUB_TOKEN: ${{ secrets.RADAR_GITHUB_TOKEN }}
+        run: npm run validate
+
+      - name: Run radar
+        env:
+          GITHUB_TOKEN: ${{ secrets.RADAR_GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: npm run radar
+
+      - name: Audit package health
+        run: npm run audit
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: open-bounty-radar-reports
+          path: reports/
+          if-no-files-found: warn

@@ -29,6 +29,8 @@ test('doctor reports healthy environment with token and reachable GitHub API', a
   const rendered = renderDoctorResult(result);
   assert.match(rendered, /Open Bounty Radar Doctor/);
   assert.match(rendered, /4999\/5000 core requests remaining/);
+  assert.match(rendered, /Live listing adapters/);
+  assert.match(rendered, /Workspace state/);
 });
 
 test('doctor warns when GitHub token is missing', async () => {

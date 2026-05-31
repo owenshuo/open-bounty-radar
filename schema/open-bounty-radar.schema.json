@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-bounty-radar.local/schema/open-bounty-radar.schema.json",
+  "title": "Open Bounty Radar Configuration",
+  "description": "Schema for radar, scan, and watch configuration files used by Open Bounty Radar.",
+  "oneOf": [
+    {"$ref": "#/$defs/radarConfig"},
+    {"$ref": "#/$defs/scanConfig"},
+    {"$ref": "#/$defs/watchConfig"}
+  ],
+  "$defs": {
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outputPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "radarConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scan": {"$ref": "#/$defs/radarScanSection"},
+        "watch": {"$ref": "#/$defs/radarWatchSection"}
+      },
+      "anyOf": [
+        {"required": ["scan"]},
+        {"required": ["watch"]}
+      ]
+    },
+    "radarBaseSection": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "config": {"$ref": "#/$defs/path"},
+        "out": {"$ref": "#/$defs/outputPath"},
+        "json": {"$ref": "#/$defs/outputPath"},
+        "html": {"$ref": "#/$defs/outputPath"},
+        "history": {"$ref": "#/$defs/outputPath"},
+        "state": {"$ref": "#/$defs/outputPath"},
+        "notify": {"type": "boolean"}
+      },
+      "required": ["config"]
+    },
+    "radarScanSection": {
+      "allOf": [
+        {"$ref": "#/$defs/radarBaseSection"},
+        {
+          "type": "object",
+          "properties": {
+            "dashboard": {"$ref": "#/$defs/outputPath"},
+            "detailsDir": {"$ref": "#/$defs/path"},
+            "csv": {"$ref": "#/$defs/outputPath"},
+            "jsonl": {"$ref": "#/$defs/outputPath"},
+            "actionPlan": {"$ref": "#/$defs/outputPath"},
+            "watchlistSuggestions": {"$ref": "#/$defs/outputPath"},
+            "workspace": {"$ref": "#/$defs/outputPath"},
+            "workspaceImport": {"$ref": "#/$defs/outputPath"}
+          }
+        }
+      ]
+    },
+    "radarWatchSection": {
+      "allOf": [
+        {"$ref": "#/$defs/radarBaseSection"},
+        {
+          "type": "object",
+          "properties": {
+            "watchDashboard": {"$ref": "#/$defs/outputPath"}
+          }
+        }
+      ]
+    },
+    "scanConfig": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "githubTokenEnv": {"type": "string"},
+        "statePath": {"$ref": "#/$defs/outputPath"},
+        "workspacePath": {"$ref": "#/$defs/outputPath"},
+        "notifications": {"$ref": "#/$defs/notifications"},
+        "defaults": {"$ref": "#/$defs/scanDefaults"},
+        "filters": {"$ref": "#/$defs/filters"},
+        "repositories": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/repository"}
+        },
+        "algora": {"$ref": "#/$defs/listingSource"},
+        "opire": {"$ref": "#/$defs/listingSource"}
+      },
+      "required": ["repositories"],
+      "anyOf": [
+        {"properties": {"repositories": {"minItems": 1}}},
+        {"required": ["algora"]},
+        {"required": ["opire"]}
+      ]
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "owner": {"type": "string", "minLength": 1},
+        "repo": {"type": "string", "minLength": 1},
+        "queries": {"type": "array", "items": {"type": "string"}},
+        "presets": {"type": "array", "items": {"type": "string"}},
+        "maxIssuesPerQuery": {"type": "integer", "minimum": 1},
+        "includeClosed": {"type": "boolean"},
+        "linkedPullRequestDetection": {"enum": ["search", "timeline", "both"]}
+      },
+      "required": ["owner", "repo"]
+    },
+    "scanDefaults": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "maxIssuesPerQuery": {"type": "integer", "minimum": 1},
+        "includeClosed": {"type": "boolean"},
+        "competitionDetails": {"type": "boolean"},
+        "competitionDetailLimit": {"type": "integer", "minimum": 1},
+        "linkedPullRequestDetection": {"enum": ["search", "timeline", "both"]}
+      }
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "minAmount": {"type": "number", "minimum": 0},
+        "excludeKeywords": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "listingSource": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "listings": {"type": "array", "items": {"type": "object"}},
+        "listingsPath": {"$ref": "#/$defs/path"},
+        "listingsUrl": {"type": "string", "format": "uri"},
+        "liveUrl": {"type": "string", "format": "uri"},
+        "enrichGitHub": {"type": "boolean"},
+        "cacheDir": {"$ref": "#/$defs/path"},
+        "cacheTtlMs": {"type": "integer", "minimum": 0}
+      },
+      "anyOf": [
+        {"required": ["listings"]},
+        {"required": ["listingsPath"]},
+        {"required": ["listingsUrl"]},
+        {"required": ["liveUrl"]}
+      ]
+    },
+    "watchConfig": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "githubTokenEnv": {"type": "string"},
+        "statePath": {"$ref": "#/$defs/outputPath"},
+        "notifications": {"$ref": "#/$defs/notifications"},
+        "defaults": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "activityLimit": {"type": "integer", "minimum": 1}
+          }
+        },
+        "pullRequests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/pullRequest"}
+        }
+      },
+      "required": ["pullRequests"]
+    },
+    "pullRequest": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "owner": {"type": "string", "minLength": 1},
+        "repo": {"type": "string", "minLength": 1},
+        "number": {"type": "integer", "minimum": 1},
+        "label": {"type": "string"}
+      },
+      "required": ["owner", "repo", "number"]
+    },
+    "notifications": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "notifyOnFirstRun": {"type": "boolean"},
+        "rules": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "preset": {"enum": ["quiet", "aggressive", "high-value-only", "low-competition-only"]},
+            "minSeverity": {"enum": ["low", "medium", "high"]},
+            "actions": {"type": "array", "items": {"type": "string"}},
+            "minAmount": {"type": "number", "minimum": 0},
+            "competitionRisks": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "telegram": {"$ref": "#/$defs/notificationTarget"},
+        "webhook": {"$ref": "#/$defs/notificationTarget"},
+        "discord": {"$ref": "#/$defs/notificationTarget"},
+        "slack": {"$ref": "#/$defs/notificationTarget"}
+      }
+    },
+    "notificationTarget": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "url": {"type": "string"},
+        "urlEnv": {"type": "string"},
+        "botTokenEnv": {"type": "string"},
+        "chatIdEnv": {"type": "string"},
+        "digest": {"type": "boolean"}
+      }
+    }
+  }
+}

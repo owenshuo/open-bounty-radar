@@ -2,7 +2,7 @@ import {access, mkdir, writeFile, rm} from 'node:fs/promises';
 import {constants} from 'node:fs';
 import path from 'node:path';
 import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
-import {GitHubClient} from './github.js';
+import {expandRepositoryQueries} from './search-presets.js';
 import {validateRadarConfig} from './validate.js';
 
 function nodeMajor(version) {
@@ -67,7 +67,18 @@ function outputDirectoriesFor(sectionName, section) {
           html: './reports/bounty-report.html',
         };
 
-  const paths = [section.out ?? defaults.out, section.json ?? defaults.json, section.html ?? defaults.html].filter(Boolean);
+  const paths = [
+    section.out ?? defaults.out,
+    section.json ?? defaults.json,
+    section.html ?? defaults.html,
+    section.dashboard,
+    section.watchDashboard,
+    section.csv,
+    section.jsonl,
+    section.actionPlan,
+    section.watchlistSuggestions,
+    section.workspace,
+  ].filter(Boolean);
   return [...new Set(paths.map((filePath) => path.dirname(path.resolve(filePath))))];
 }
 
@@ -84,15 +95,38 @@ async function checkGitHubToken({checks, sections, env, fetchImpl}) {
     addCheck(checks, `GitHub token ${tokenEnv}`, 'ok', 'set');
 
     try {
-      const client = new GitHubClient({token, fetchImpl});
-      const data = await client.request('/rate_limit');
+      const response = await fetchImpl('https://api.github.com/rate_limit', {
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${token}`,
+          'User-Agent': 'open-bounty-radar',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+      if (!response.ok) throw new Error(`GitHub request failed ${response.status}`);
+      const data = await response.json();
       const core = data.resources?.core;
-      const detail = core ? `${core.remaining}/${core.limit} core requests remaining` : 'rate limit endpoint reachable';
+      const reset = core?.reset ? new Date(core.reset * 1000).toISOString() : 'unknown reset';
+      const detail = core ? `${core.remaining}/${core.limit} core requests remaining; resets ${reset}` : 'rate limit endpoint reachable';
       addCheck(checks, 'GitHub API', 'ok', detail);
+
+      const scopes = response.headers.get('x-oauth-scopes');
+      addCheck(checks, 'GitHub token scopes', scopes ? 'ok' : 'warning', scopes || 'scope header unavailable; fine-grained tokens may omit this header');
     } catch (error) {
       addCheck(checks, 'GitHub API', 'warning', error instanceof Error ? error.message.split('\n')[0] : String(error));
     }
   }
+}
+
+function addScanOverviewChecks(checks, sectionConfig) {
+  const repositories = sectionConfig.repositories ?? [];
+  const queryCount = repositories.reduce((total, repository) => total + expandRepositoryQueries(repository).length, 0);
+  const timelineRepositories = repositories.filter((repository) => (repository.linkedPullRequestDetection ?? sectionConfig.defaults?.linkedPullRequestDetection ?? 'both') !== 'search').length;
+  addCheck(checks, 'Scan scope', 'ok', `${repositories.length} repos, ${queryCount} expanded query(ies)`);
+  addCheck(checks, 'Timeline PR detection', timelineRepositories ? 'ok' : 'warning', timelineRepositories ? `${timelineRepositories} repo(s) use timeline or both detection` : 'disabled for all repositories');
+  const liveAdapters = ['algora', 'opire'].filter((platform) => sectionConfig[platform]?.liveUrl);
+  addCheck(checks, 'Live listing adapters', liveAdapters.length ? 'ok' : 'warning', liveAdapters.length ? `${liveAdapters.join(', ')} live source(s) configured` : 'no live listing source configured');
+  addCheck(checks, 'Workspace state', sectionConfig.workspacePath ? 'ok' : 'warning', sectionConfig.workspacePath ? sectionConfig.workspacePath : 'workspacePath not set in scan config');
 }
 
 export async function inspectEnvironment(configPath, {env = process.env, fetchImpl = fetch, nodeVersion = process.versions.node} = {}) {
@@ -119,6 +153,9 @@ export async function inspectEnvironment(configPath, {env = process.env, fetchIm
     for (const {name, section, config} of sections) {
       await readableFile(section.config);
       addCheck(checks, `${name} config file`, 'ok', path.resolve(section.config));
+
+      if (name === 'scan') addScanOverviewChecks(checks, config);
+      if (name === 'watch') addCheck(checks, 'Watch scope', 'ok', `${config.pullRequests.length} pull request(s)`);
 
       for (const outputDirectory of outputDirectoriesFor(name, section)) {
         const directory = await writableDirectoryFor(path.join(outputDirectory, '.probe'));

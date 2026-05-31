@@ -1,5 +1,8 @@
 # Open Bounty Radar
 
+[![Node.js >=20](https://img.shields.io/badge/node-%3E%3D20-116149)](package.json)
+[![License: MIT](https://img.shields.io/badge/license-MIT-315f9f)](LICENSE)
+
 Open Bounty Radar is a small CLI for discovering and monitoring paid open-source issues, bounty-style GitHub issues, and competitive pull request opportunities.
 
 It helps turn scattered bounty research into a repeatable workflow:
@@ -35,16 +38,27 @@ This project turns that manual research into a repeatable scan and report.
 - Filters closed issues by default
 - Searches for pull requests that mention each issue
 - Reads GitHub issue timeline cross-references to catch linked PRs search can miss
+- Enriches competing PRs with draft/merged state, maintainer review signals, checks, and strength labels
 - Scores candidates by bounty amount, freshness, open state, and PR competition
 - Adds recommendation and risk tags such as `strong`, `risky`, `crowded`, and `special-requirements`
 - Assigns risk severity levels so high-risk blockers stand out from minor warnings
 - Adds action labels such as `act-now`, `watch`, `manual-review`, and `skip`
 - Highlights top candidates so the report opens with the most actionable issues
 - Shows linked PR competition details with state, update date, and detection source
-- Writes Markdown and optional JSON reports
+- Writes Markdown, JSON, static HTML, and dashboard reports
+- Supports GitHub search presets such as `bounty`, `external`, `recent`, `low-competition`, and `crypto-bounty`
+- Provides an interactive static dashboard with filters, search, copyable issue URLs, and candidate detail pages
+- Includes Algora and Opire adapter foundations with optional GitHub issue enrichment
+- Can extract GitHub-linked bounty listings from simple live HTML sources
+- Adds local AI-style assessments with verdict, confidence, next steps, likely files, and abandon conditions
+- Adds PR readiness checks for reproduction, scope, requirements, bounty, and competition risk
+- Exports watchlist suggestions so promising candidates can be turned into submitted-PR monitoring entries
+- Maintains optional local workspace state for candidate status and notes
+- Adds watch next-action hints such as `reply`, `fix-ci`, `revise`, and `claim-or-confirm`
+- Includes a GitHub Actions workflow template for scheduled runs
 - Watches submitted pull requests for merge/close state, checks, reviews, and maintainer comments
 - Stores state snapshots and detects meaningful changes between runs
-- Sends Telegram notifications for detected changes
+- Sends Telegram or generic webhook notifications for detected changes
 
 ## Quick Start
 
@@ -63,7 +77,7 @@ npm run radar
 - scan open bounty candidates
 - watch already-submitted pull requests
 
-Markdown, JSON, and static HTML reports are written to `reports/` by default.
+Markdown, JSON, static HTML, and dashboard reports are written to `reports/` by default.
 
 `npm run doctor` checks your Node.js version, config files, output directories, token setup, and GitHub API connectivity.
 
@@ -89,15 +103,48 @@ Local config files are ignored by git so you can customize them safely.
 
 See [Demo Output](docs/demo-output.md) for a compact example of the generated reports.
 
+Want to try the UI without a GitHub token or live API calls?
+
+```bash
+npm run demo:offline
+npm run serve
+```
+
+Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fixtures/demo-listings.json`, so this path is safe for screenshots, demos, and release smoke tests.
+
 ## Guides
 
 - [Configuration Guide](docs/configuration.md)
+- [Config Schema](docs/config-schema.md)
 - [Demo Output](docs/demo-output.md)
 - [Bounty Platform Notes](docs/bounty-platforms.md)
 - [Bounty Contributor Checklist](docs/contributor-checklist.md)
 - [Pull Request Quality Checklist](docs/pr-quality-checklist.md)
 - [Scoring Guide](docs/scoring-guide.md)
 - [Roadmap](docs/roadmap.md)
+- [GitHub Actions Template](docs/github-actions.md)
+- [Release Checklist](docs/release.md)
+- [Architecture](docs/architecture.md)
+- [Demo Script](docs/demo-script.md)
+- [Demo Assets](docs/demo-assets.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+
+## Outputs
+
+Open Bounty Radar can write:
+
+- Markdown reports
+- JSON reports
+- static HTML reports
+- scan dashboard
+- watch dashboard
+- CSV exports
+- JSONL exports
+- action plans
+- watchlist suggestion JSON
+- workspace state JSON
+- history JSONL
 
 To run each job separately:
 
@@ -153,7 +200,10 @@ The recommended one-command entrypoint is the local `bounty-radar.json` generate
     "config": "./bounty-radar.config.json",
     "out": "./reports/bounty-report.md",
     "json": "./reports/bounty-report.json",
-    "html": "./reports/bounty-report.html"
+    "html": "./reports/bounty-report.html",
+    "dashboard": "./reports/dashboard.html",
+    "detailsDir": "./reports/details",
+    "watchlistSuggestions": "./reports/watchlist-suggestions.json"
   },
   "watch": {
     "enabled": true,
@@ -184,6 +234,29 @@ Development/demo commands that run directly from `examples/` are also available:
 npm run validate:example
 npm run doctor:example
 npm run radar:example
+npm run dashboard:example
+npm run demo:offline
+npm run audit
+npm run release:check
+npm run serve
+```
+
+Inspect one issue deeply:
+
+```bash
+node ./bin/open-bounty-radar.js inspect --issue-url https://github.com/owner/repo/issues/123 --out ./reports/issue-inspection.md --json ./reports/issue-inspection.json --html ./reports/issue-inspection.html
+```
+
+Batch inspect issues from a text file:
+
+```bash
+node ./bin/open-bounty-radar.js inspect --issue-list ./issues.txt --out ./reports/issue-batch.md --json ./reports/issue-batch.json
+```
+
+Add `--html ./reports/issue-batch.html` to create a browser-friendly batch inspection dashboard. Batch HTML also writes linked per-issue detail pages under `reports/issue-details/` by default:
+
+```bash
+node ./bin/open-bounty-radar.js inspect --issue-list ./issues.txt --out ./reports/issue-batch.md --json ./reports/issue-batch.json --html ./reports/issue-batch.html --inspect-details-dir ./reports/issue-details
 ```
 
 ### Scan Config
@@ -205,8 +278,11 @@ Create a JSON config:
   "defaults": {
     "maxIssuesPerQuery": 20,
     "includeClosed": false,
-    "linkedPullRequestDetection": "both"
+    "linkedPullRequestDetection": "both",
+    "competitionDetails": true,
+    "competitionDetailLimit": 5
   },
+  "workspacePath": "./reports/workspace.json",
   "filters": {
     "minAmount": 100,
     "excludeKeywords": ["marketing", "hardware", "ios only"]
@@ -273,11 +349,11 @@ node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out .
 
 The watch report highlights PRs that need attention because they were closed, have failing checks, or received maintainer/owner activity.
 
-## Telegram Notifications
+## Notifications
 
-Telegram notifications are change-based. The first run creates a baseline state file, then later runs notify only when something meaningful changes.
+Notifications are change-based. The first run creates a baseline state file, then later runs notify only when something meaningful changes.
 
-Required environment variables:
+Telegram environment variables:
 
 ```bash
 export TELEGRAM_BOT_TOKEN=123456:your_bot_token
@@ -310,6 +386,79 @@ node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out .
 
 To enable notifications from config instead of passing `--notify`, set `notifications.telegram.enabled` to `true`.
 
+Generic JSON webhooks are also supported:
+
+```json
+{
+  "notifications": {
+    "webhook": {
+      "enabled": true,
+      "urlEnv": "OPEN_BOUNTY_RADAR_WEBHOOK_URL"
+    }
+  }
+}
+```
+
+The webhook payload includes the run kind, generation time, compact digest text, and the structured change list.
+
+Discord and Slack incoming webhooks can use the same digest:
+
+```json
+{
+  "notifications": {
+    "discord": {"enabled": true},
+    "slack": {"enabled": true}
+  }
+}
+```
+
+Set `DISCORD_WEBHOOK_URL` or `SLACK_WEBHOOK_URL` in the environment.
+
+Notification rules let routine scans stay quieter:
+
+```json
+{
+  "notifications": {
+    "rules": {
+      "minSeverity": "medium",
+      "actions": ["act-now", "manual-review"],
+      "minAmount": 250,
+      "competitionRisks": ["none", "low"]
+    }
+  }
+}
+```
+
+You can also use presets: `quiet`, `aggressive`, `high-value-only`, or `low-competition-only`.
+
+Workspace state can be merged back from a dashboard export:
+
+```bash
+node ./bin/open-bounty-radar.js scan --workspace ./reports/workspace.json --workspace-import ./exports/workbench.json
+```
+
+You can also summarize or merge workspace state directly:
+
+```bash
+node ./bin/open-bounty-radar.js workspace --workspace ./reports/workspace.json --workspace-import ./exports/workbench.json --out ./reports/workspace-summary.md --json ./reports/workspace.json
+```
+
+The dashboard also supports importing a previously exported workspace JSON file directly in the browser. Use Export Workspace to copy the current local workbench state, save it as JSON if desired, then Import Workspace to restore status and notes on another generated dashboard.
+
+## Config Schema
+
+A formal JSON Schema is included at `schema/open-bounty-radar.schema.json`. It covers the top-level radar config plus scan and watch config shapes, including GitHub repositories, Algora/Opire listing sources, notifications, workspace paths, and report outputs.
+
+## Release Check
+
+Before tagging or sharing a release candidate, run:
+
+```bash
+npm run release:check
+```
+
+It runs tests, example validation, the offline demo scan, package audit, and `git diff --check`.
+
 ## Scoring
 
 The score is intentionally simple:
@@ -318,6 +467,8 @@ The score is intentionally simple:
 - recently updated issues score higher
 - open issues score higher than closed ones
 - each linked or mentioned PR reduces score
+- strong competing PRs with approvals, passing checks, or merged state increase risk
+- AI-style assessments summarize whether to start, watch, manually review, or abandon
 
 Linked PR detection supports `search`, `timeline`, or `both`. The default `both` mode merges GitHub Search results with issue timeline cross-references, then de-duplicates by PR URL.
 

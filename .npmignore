@@ -1,0 +1,8 @@
+reports/
+test/
+.github/
+bounty-radar.json
+bounty-radar.config.json
+bounty-radar.watchlist.json
+.env
+*.tgz

@@ -1,0 +1,44 @@
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "statePath": "./reports/radar-state.json",
+  "defaults": {
+    "maxIssuesPerQuery": 5,
+    "includeClosed": false,
+    "linkedPullRequestDetection": "both"
+  },
+  "filters": {
+    "minAmount": 100,
+    "excludeKeywords": []
+  },
+  "repositories": [
+    {
+      "owner": "Expensify",
+      "repo": "App",
+      "presets": ["external"]
+    }
+  ],
+  "algora": {
+    "listings": [
+      {
+        "url": "https://console.algora.io/example",
+        "githubIssueUrl": "https://github.com/owner/repo/issues/123",
+        "title": "Example Algora bounty",
+        "amount": 500,
+        "currency": "USD",
+        "description": "Steps to reproduce: run the failing command. Expected behavior: pass. Actual behavior: fail."
+      }
+    ]
+  },
+  "opire": {
+    "listings": [
+      {
+        "url": "https://opire.dev/example",
+        "issueUrl": "https://github.com/owner/repo/issues/456",
+        "title": "Example Opire bounty",
+        "amount": 300,
+        "currency": "USD",
+        "description": "Steps to reproduce: open the page. Expected behavior: pass. Actual behavior: fail."
+      }
+    ]
+  }
+}

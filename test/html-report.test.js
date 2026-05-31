@@ -43,6 +43,7 @@ test('renders scan HTML reports with escaped content', () => {
   assert.match(html, /<!doctype html>/);
   assert.match(html, /Open Bounty Radar Report/);
   assert.match(html, /Top Candidates/);
+  assert.match(html, /Action Groups/);
   assert.match(html, /act-now/);
   assert.match(html, /Competition Details/);
   assert.match(html, /&lt;b&gt;competing&lt;\/b&gt;/);
@@ -63,6 +64,7 @@ test('renders watch HTML reports with check status', () => {
         title: 'Fix bounty',
         url: 'https://github.com/owner/repo/pull/2',
         status: 'needs_attention',
+        action: 'fix-ci',
         needsAttention: true,
         checks: {state: 'failing', total: 3, failing: 1, pending: 0},
         updatedAt: '2026-01-01T00:00:00Z',
@@ -75,5 +77,7 @@ test('renders watch HTML reports with check status', () => {
 
   assert.match(html, /Open Bounty Radar PR Watch Report/);
   assert.match(html, /needs_attention/);
+  assert.match(html, /fix-ci/);
+  assert.match(html, /Pull Requests by Status/);
   assert.match(html, /failing \(1\/3\)/);
 });

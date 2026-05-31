@@ -1,0 +1,18 @@
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "workspacePath": "./reports/demo-workspace.json",
+  "defaults": {
+    "linkedPullRequestDetection": "both",
+    "competitionDetails": false,
+    "competitionDetailLimit": 3
+  },
+  "filters": {
+    "minAmount": 100,
+    "excludeKeywords": []
+  },
+  "repositories": [],
+  "algora": {
+    "listingsPath": "./examples/fixtures/demo-listings.json",
+    "enrichGitHub": false
+  }
+}

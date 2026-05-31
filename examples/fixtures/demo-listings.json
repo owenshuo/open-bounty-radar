@@ -1,0 +1,35 @@
+[
+  {
+    "url": "https://algora.io/bounties/demo-1",
+    "githubIssueUrl": "https://github.com/example/automation-platform/issues/101",
+    "title": "Add retry-aware webhook delivery for failed automation jobs",
+    "amount": 750,
+    "currency": "USD",
+    "createdAt": "2026-05-20T08:00:00Z",
+    "updatedAt": "2026-05-24T12:00:00Z",
+    "pullRequestCount": 0,
+    "description": "Build deterministic retry scheduling with clear tests. Steps to reproduce: webhook delivery fails once and never retries. Expected behavior: failed deliveries retry with backoff. Actual behavior: the event is dropped."
+  },
+  {
+    "url": "https://algora.io/bounties/demo-2",
+    "githubIssueUrl": "https://github.com/example/devtools/issues/42",
+    "title": "Improve CLI config validation and JSON error output",
+    "amount": 300,
+    "currency": "USD",
+    "createdAt": "2026-05-18T09:30:00Z",
+    "updatedAt": "2026-05-22T10:10:00Z",
+    "pullRequestCount": 1,
+    "description": "The CLI should explain invalid config fields and return structured JSON for automation. Includes reproduction steps and does not require special hardware."
+  },
+  {
+    "url": "https://opire.dev/bounties/demo-3",
+    "githubIssueUrl": "https://github.com/example/mobile-suite/issues/77",
+    "title": "Investigate iOS-only rendering issue with paid workspace",
+    "amount": 1200,
+    "currency": "USD",
+    "createdAt": "2026-05-10T11:00:00Z",
+    "updatedAt": "2026-05-12T11:00:00Z",
+    "pullRequestCount": 3,
+    "description": "Requires paid workspace and iOS hardware. The issue is valuable but has special setup requirements and several competing PRs."
+  }
+]

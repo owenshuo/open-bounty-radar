@@ -28,6 +28,8 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
             detectionSources: ['search', 'timeline'],
           },
         ],
+        assignees: ['maintainer'],
+        bountySignals: {labelSignals: ['assigned']},
         pullRequestDetection: 'both',
         updatedAt: '2026-01-01T00:00:00Z',
         score: {total: 30},
@@ -46,11 +48,16 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
   assert.match(markdown, /Action/);
   assert.match(markdown, /watch/);
   assert.match(markdown, /Top Candidates/);
+  assert.match(markdown, /Action Summary/);
+  assert.match(markdown, /Candidates by Action/);
+  assert.match(markdown, /Candidates by Risk Severity/);
   assert.match(markdown, /risky/);
   assert.match(markdown, /some-competition/);
   assert.match(markdown, /low\/some-competition/);
   assert.match(markdown, /solid-reward/);
   assert.match(markdown, /Linked PR details/);
+  assert.match(markdown, /Assignees: maintainer/);
+  assert.match(markdown, /Bounty signals: assigned/);
   assert.match(markdown, /Competing fix/);
   assert.match(markdown, /search\+timeline/);
 });

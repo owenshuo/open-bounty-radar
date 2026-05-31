@@ -13,6 +13,7 @@ The `doctor` command checks:
 - GitHub API connectivity and rate limit
 - readable config files
 - writable report and state paths
+- scan scope and timeline PR detection
 
 ### Report Quality
 
@@ -26,13 +27,14 @@ Improve the HTML and Markdown reports with:
 
 ### GitHub Search Modes
 
-Add reusable search presets for:
+Reusable search presets now cover:
 
 - bounty-like issue bodies
 - label-based searches
 - low-competition issues
 - recently created issues
-- GitHub Discussions that mention bounties
+
+Future search work can add GitHub Discussions that mention bounties.
 
 ## Platform Adapters
 
@@ -40,7 +42,7 @@ Add reusable search presets for:
 
 Algora is the first external platform target because many bounties map back to real GitHub issues and PRs.
 
-Useful adapter behavior:
+The current foundation can normalize GitHub-linked Algora listings. Future live discovery should:
 
 - discover open bounties
 - resolve the linked GitHub issue
@@ -100,6 +102,8 @@ A local dashboard can make the tool easier to demo and use:
 - one-click report links
 
 The dashboard should be optional and should not replace the CLI.
+
+Current dashboard support is static HTML with client-side filters, search, top candidates, action groups, and copyable issue URLs.
 
 ## Principles
 

@@ -1,4 +1,5 @@
 import {topCandidates} from './candidate-ranking.js';
+import {candidateActionSummary, groupCandidatesByAction, groupCandidatesByRiskSeverity} from './candidate-groups.js';
 
 function money(candidate) {
   return `${candidate.currency} ${candidate.amount.toLocaleString('en-US')}`;
@@ -6,6 +7,10 @@ function money(candidate) {
 
 function prSummary(candidate) {
   if (candidate.pullRequestCount === 0) return '0 linked/mentioned PRs';
+  if (candidate.competition?.summary) {
+    const summary = candidate.competition.summary;
+    return `${candidate.pullRequestCount} PR(s), competition ${summary.risk}: ${summary.open} open, ${summary.strong} strong, ${summary.winner} merged/winner`;
+  }
   const prs = candidate.pullRequests
     .slice(0, 3)
     .map((pr) => {
@@ -26,7 +31,10 @@ function prDetails(candidate) {
   return candidate.pullRequests.map((pr) => {
     const sources = pr.detectionSources?.length ? pr.detectionSources.join('+') : 'unknown';
     const updated = pr.updatedAt ? pr.updatedAt.slice(0, 10) : 'unknown';
-    return `  - [#${pr.number}: ${pr.title}](${pr.url}) - ${pr.state} - ${updated} - ${sources}`;
+    const strength = pr.strength ? ` - ${pr.strength}` : '';
+    const checks = pr.checks?.state ? ` - checks ${pr.checks.state}` : '';
+    const review = pr.latestReviewState ? ` - review ${pr.latestReviewState}` : '';
+    return `  - [#${pr.number}: ${pr.title}](${pr.url}) - ${pr.state}${strength}${checks}${review} - ${updated} - ${sources}`;
   });
 }
 
@@ -64,6 +72,31 @@ function appendTopCandidates(lines, candidates) {
   lines.push('');
 }
 
+function appendCandidateGroups(lines, candidates) {
+  const actionSummary = candidateActionSummary(candidates);
+  lines.push('## Action Summary', '');
+  lines.push(`- Act now: ${actionSummary['act-now']}`);
+  lines.push(`- Watch: ${actionSummary.watch}`);
+  lines.push(`- Manual review: ${actionSummary['manual-review']}`);
+  lines.push(`- Consider: ${actionSummary.consider}`);
+  lines.push(`- Skip: ${actionSummary.skip}`, '');
+
+  lines.push('## Candidates by Action', '');
+  for (const group of groupCandidatesByAction(candidates)) {
+    lines.push(`### ${group.name} (${group.candidates.length})`, '');
+    for (const candidate of group.candidates) {
+      lines.push(`- [${candidate.repository}#${candidate.number}](${candidate.url}) ${money(candidate)} / score ${candidate.score.total} / ${candidate.analysis?.recommendation ?? 'unknown'}`);
+    }
+    lines.push('');
+  }
+
+  lines.push('## Candidates by Risk Severity', '');
+  for (const group of groupCandidatesByRiskSeverity(candidates)) {
+    lines.push(`- ${group.name}: ${group.candidates.length}`);
+  }
+  lines.push('');
+}
+
 export function renderMarkdownReport(report) {
   const lines = [
     '# Open Bounty Radar Report',
@@ -91,6 +124,7 @@ export function renderMarkdownReport(report) {
 
   appendChanges(lines, report);
   appendTopCandidates(lines, report.candidates);
+  appendCandidateGroups(lines, report.candidates);
 
   lines.push('| Score | Action | Recommendation | Bounty | Issue | Competition | Risks | Updated |');
   lines.push('| ---: | --- | --- | --- | --- | --- | --- | --- |');
@@ -108,6 +142,8 @@ export function renderMarkdownReport(report) {
     lines.push(`- Bounty: ${money(candidate)} (${candidate.rawAmount})`);
     lines.push(`- State: ${candidate.state}`);
     lines.push(`- Labels: ${candidate.labels.length ? candidate.labels.join(', ') : 'none'}`);
+    if (candidate.assignees?.length) lines.push(`- Assignees: ${candidate.assignees.join(', ')}`);
+    if (candidate.bountySignals?.labelSignals?.length) lines.push(`- Bounty signals: ${candidate.bountySignals.labelSignals.join(', ')}`);
     lines.push(`- Action: ${candidate.analysis?.action ?? 'consider'}`);
     lines.push(`- Recommendation: ${candidate.analysis?.recommendation ?? 'unknown'}`);
     lines.push(`- Why: ${tagSummary(candidate.analysis?.reasonTags)}`);

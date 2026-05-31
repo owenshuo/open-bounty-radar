@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Open Bounty Radar</title>
+  <desc id="desc">Open Bounty Radar project card</desc>
+  <rect width="1200" height="630" fill="#f7f8fb"/>
+  <rect x="72" y="76" width="1056" height="478" rx="24" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+  <circle cx="170" cy="176" r="44" fill="#116149"/>
+  <path d="M147 176h46M170 153v46M148 199l44-44M148 153l44 44" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
+  <text x="246" y="174" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="58" font-weight="700" fill="#18202f">Open Bounty Radar</text>
+  <text x="246" y="226" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="28" fill="#697386">Find paid OSS issues. Inspect competition. Monitor PRs.</text>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif" font-size="24" fill="#18202f">
+    <rect x="246" y="294" width="230" height="74" rx="10" fill="#f1f6ff" stroke="#b8c9e6"/>
+    <text x="276" y="340">Bounty scan</text>
+    <rect x="506" y="294" width="260" height="74" rx="10" fill="#fff8e9" stroke="#e7d2a5"/>
+    <text x="536" y="340">PR competition</text>
+    <rect x="796" y="294" width="210" height="74" rx="10" fill="#f4f6fa" stroke="#d9deea"/>
+    <text x="826" y="340">Watchlist</text>
+  </g>
+  <text x="246" y="444" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="26" fill="#116149">Local-first CLI + dashboard for bounty contributors</text>
+</svg>

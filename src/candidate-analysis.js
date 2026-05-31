@@ -37,7 +37,7 @@ function actionFor({recommendation, riskTags, candidate}) {
 
   if (recommendation === 'skip') return 'skip';
   if (recommendation === 'strong') return 'act-now';
-  if (risks.has('crowded') || risks.has('unclear') || risks.has('special-requirements')) return 'manual-review';
+  if (risks.has('crowded') || risks.has('strong-competing-pr') || risks.has('unclear') || risks.has('special-requirements')) return 'manual-review';
   if (candidate.pullRequestCount > 0 || recommendation === 'risky') return 'watch';
   return 'consider';
 }
@@ -60,6 +60,14 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
   else if (candidate.pullRequestCount >= 4) riskTags.push(risk('crowded', `${candidate.pullRequestCount} linked PR(s)`, 'high'));
   else riskTags.push(risk('some-competition', `${candidate.pullRequestCount} linked PR(s)`, 'low'));
 
+  if (candidate.competition?.summary) {
+    const summary = candidate.competition.summary;
+    if (summary.risk === 'high') riskTags.push(risk('strong-competing-pr', `${summary.strong + summary.winner} strong or merged competing PR(s)`, 'high'));
+    else if (summary.risk === 'medium') riskTags.push(risk('active-competition', `${summary.active} active competing PR(s)`, 'medium'));
+    else if (summary.risk === 'low') riskTags.push(risk('light-competition', `${summary.active} active competing PR(s)`, 'low'));
+    else reasonTags.push(tag('weak-competition', 'linked PRs look closed, draft, failing, or inactive'));
+  }
+
   if (candidate.state !== 'open') riskTags.push(risk('not-open', `issue state is ${candidate.state}`, 'high'));
   if (hasAny(fullText, SPECIAL_REQUIREMENT_KEYWORDS)) riskTags.push(risk('special-requirements', 'may need specific hardware, account, or platform access', 'high'));
   if (hasAny(fullText, UNCLEAR_KEYWORDS)) riskTags.push(risk('unclear', 'wording suggests investigation or uncertainty', 'high'));
@@ -70,8 +78,8 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
 
   let recommendation = 'consider';
   if (candidate.state !== 'open') recommendation = 'skip';
-  else if (riskTags.some((item) => ['crowded', 'special-requirements', 'unclear'].includes(item.name))) recommendation = 'risky';
-  else if (candidate.score.total >= 35 && candidate.amount >= 250 && candidate.pullRequestCount <= 1) recommendation = 'strong';
+  else if (riskTags.some((item) => ['crowded', 'strong-competing-pr', 'special-requirements', 'unclear'].includes(item.name))) recommendation = 'risky';
+  else if (candidate.score.total >= 35 && candidate.amount >= 250 && candidate.pullRequestCount <= 1 && candidate.competition?.summary?.risk !== 'high') recommendation = 'strong';
 
   return {
     recommendation,

@@ -81,6 +81,11 @@ export class GitHubClient {
     return this.request(`/repos/${owner}/${repo}/pulls/${number}`);
   }
 
+  async getIssue({fullName, number}) {
+    const [owner, repo] = splitFullName(fullName);
+    return this.request(`/repos/${owner}/${repo}/issues/${number}`);
+  }
+
   async listIssueComments({fullName, number, perPage = 20}) {
     const [owner, repo] = splitFullName(fullName);
     return this.request(`/repos/${owner}/${repo}/issues/${number}/comments`, {

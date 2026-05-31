@@ -7,9 +7,14 @@ export async function loadJsonConfig(configPath) {
 
 export async function loadConfig(configPath) {
   const config = await loadJsonConfig(configPath);
+  const hasExternalSource = Boolean(config.algora || config.opire);
 
-  if (!Array.isArray(config.repositories) || config.repositories.length === 0) {
-    throw new Error('Config must include at least one repository.');
+  if (!Array.isArray(config.repositories)) {
+    throw new Error('Config must include a repositories array.');
+  }
+
+  if (config.repositories.length === 0 && !hasExternalSource) {
+    throw new Error('Config must include at least one repository or external adapter source.');
   }
 
   for (const repository of config.repositories) {

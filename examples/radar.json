@@ -4,13 +4,20 @@
     "config": "./examples/config.json",
     "out": "./reports/bounty-report.md",
     "json": "./reports/bounty-report.json",
-    "html": "./reports/bounty-report.html"
+    "html": "./reports/bounty-report.html",
+    "dashboard": "./reports/dashboard.html",
+    "csv": "./reports/bounty-candidates.csv",
+    "jsonl": "./reports/bounty-candidates.jsonl",
+    "actionPlan": "./reports/action-plan.md",
+    "history": "./reports/history.jsonl"
   },
   "watch": {
     "enabled": true,
     "config": "./examples/watchlist.json",
     "out": "./reports/pr-watch.md",
     "json": "./reports/pr-watch.json",
-    "html": "./reports/pr-watch.html"
+    "html": "./reports/pr-watch.html",
+    "watchDashboard": "./reports/watch-dashboard.html",
+    "history": "./reports/history.jsonl"
   }
 }

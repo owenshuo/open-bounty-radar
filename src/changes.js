@@ -30,7 +30,11 @@ function scanSnapshot(report) {
       amount: candidate.amount,
       currency: candidate.currency,
       pullRequestCount: candidate.pullRequestCount,
+      competitionRisk: candidate.competition?.summary?.risk ?? 'unknown',
+      strongCompetition: candidate.competition?.summary ? candidate.competition.summary.strong + candidate.competition.summary.winner : 0,
       scoreTotal: candidate.score.total,
+      action: candidate.analysis?.action ?? 'consider',
+      riskSeverity: candidate.analysis?.riskTags?.find((tag) => tag.severity === 'high')?.severity ?? candidate.analysis?.riskTags?.find((tag) => tag.severity === 'medium')?.severity ?? candidate.analysis?.riskTags?.find((tag) => tag.severity === 'low')?.severity ?? 'none',
       updatedAt: candidate.updatedAt,
     };
   }
@@ -56,6 +60,8 @@ function watchSnapshot(report) {
       failingChecks: item.checks.failing,
       pendingChecks: item.checks.pending,
       needsAttention: item.needsAttention,
+      action: item.action ?? 'wait',
+      winnerSignals: item.winnerSignals ?? [],
       latestActivity,
       latestActivityKey: latestActivityFingerprint(latestActivity),
       latestActivityNeedsAttention: activityNeedsAttention(latestActivity),
@@ -76,6 +82,13 @@ function changeFromCurrent(current, title, reasons, severity = 'medium') {
     subject: current.title,
     url: current.url,
     reasons,
+    action: current.action,
+    riskSeverity: current.riskSeverity,
+    amount: current.amount,
+    currency: current.currency,
+    competitionRisk: current.competitionRisk,
+    needsAttention: current.needsAttention,
+    winnerSignals: current.winnerSignals,
   };
 }
 
@@ -88,6 +101,10 @@ function scanChange(previous, current) {
     reasons.push(`bounty changed: ${previous.currency} ${previous.amount} -> ${current.currency} ${current.amount}`);
   }
   if (previous.pullRequestCount !== current.pullRequestCount) reasons.push(`competition changed: ${previous.pullRequestCount} -> ${current.pullRequestCount} PR(s)`);
+  if (previous.competitionRisk !== current.competitionRisk) reasons.push(`competition risk changed: ${previous.competitionRisk ?? 'unknown'} -> ${current.competitionRisk}`);
+  if (previous.strongCompetition !== current.strongCompetition) reasons.push(`strong competing PRs changed: ${previous.strongCompetition ?? 0} -> ${current.strongCompetition}`);
+  if (previous.action !== current.action) reasons.push(`action changed: ${previous.action ?? 'unknown'} -> ${current.action}`);
+  if (previous.riskSeverity !== current.riskSeverity) reasons.push(`risk changed: ${previous.riskSeverity ?? 'unknown'} -> ${current.riskSeverity}`);
 
   if (!reasons.length) return null;
   const severity = current.state === 'open' && current.pullRequestCount <= 1 ? 'high' : 'medium';
@@ -99,7 +116,9 @@ function watchChange(previous, current) {
 
   const reasons = [];
   if (previous.status !== current.status) reasons.push(`status changed: ${previous.status} -> ${current.status}`);
+  if (previous.action !== current.action) reasons.push(`next action changed: ${previous.action ?? 'unknown'} -> ${current.action}`);
   if (previous.checksState !== current.checksState) reasons.push(`checks changed: ${previous.checksState} -> ${current.checksState}`);
+  if ((current.winnerSignals ?? []).length && JSON.stringify(previous.winnerSignals ?? []) !== JSON.stringify(current.winnerSignals ?? [])) reasons.push(`winner/payment signal: ${current.winnerSignals.join('; ')}`);
   if (!previous.needsAttention && current.needsAttention) reasons.push('now needs attention');
   if (previous.latestActivityKey !== current.latestActivityKey && current.latestActivityNeedsAttention) {
     const activity = current.latestActivity;

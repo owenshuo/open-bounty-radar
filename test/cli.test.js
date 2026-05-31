@@ -10,5 +10,13 @@ test('prints help from top-level --help', async () => {
   assert.match(stdout, /Open Bounty Radar/);
   assert.match(stdout, /validate/);
   assert.match(stdout, /doctor/);
+  assert.match(stdout, /audit/);
+  assert.match(stdout, /serve/);
+  assert.match(stdout, /wizard/);
+  assert.match(stdout, /watch-dashboard/);
+  assert.match(stdout, /workspace/);
+  assert.match(stdout, /issue-list/);
+  assert.match(stdout, /inspect-details-dir/);
+  assert.match(stdout, /release-check/);
   assert.match(stdout, /init/);
 });
