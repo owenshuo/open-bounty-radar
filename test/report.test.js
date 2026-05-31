@@ -35,7 +35,7 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
           action: 'watch',
           recommendation: 'risky',
           reasonTags: [{name: 'solid-reward', detail: 'USD 500'}],
-          riskTags: [{name: 'some-competition', detail: '2 linked PR(s)'}],
+          riskTags: [{name: 'some-competition', detail: '2 linked PR(s)', severity: 'low'}],
         },
       },
     ],
@@ -48,6 +48,7 @@ test('renders recommendations and risk tags in markdown scan reports', () => {
   assert.match(markdown, /Top Candidates/);
   assert.match(markdown, /risky/);
   assert.match(markdown, /some-competition/);
+  assert.match(markdown, /low\/some-competition/);
   assert.match(markdown, /solid-reward/);
   assert.match(markdown, /Linked PR details/);
   assert.match(markdown, /Competing fix/);

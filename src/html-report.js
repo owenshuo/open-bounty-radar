@@ -24,9 +24,16 @@ function checksText(checks) {
   return `failing (${checks.failing}/${checks.total})`;
 }
 
+function severityClass(tag, fallback = '') {
+  if (tag?.severity === 'high') return 'high';
+  if (tag?.severity === 'medium') return 'medium';
+  if (tag?.severity === 'low') return 'low';
+  return fallback;
+}
+
 function tagsHtml(tags, className = '') {
   if (!tags?.length) return '<span class="muted">none</span>';
-  return tags.map((item) => `<span class="pill ${className}" title="${escapeHtml(item.detail)}">${escapeHtml(item.name)}</span>`).join(' ');
+  return tags.map((item) => `<span class="pill ${severityClass(item, className)}" title="${escapeHtml(item.detail)}">${escapeHtml(item.severity ? `${item.severity}/${item.name}` : item.name)}</span>`).join(' ');
 }
 
 function changeList(report) {

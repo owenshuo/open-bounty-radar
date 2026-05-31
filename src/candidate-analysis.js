@@ -24,8 +24,12 @@ function hasAny(text, keywords) {
   return keywords.some((keyword) => lower.includes(keyword));
 }
 
-function tag(name, detail) {
-  return {name, detail};
+function tag(name, detail, severity = null) {
+  return severity ? {name, detail, severity} : {name, detail};
+}
+
+function risk(name, detail, severity = 'medium') {
+  return tag(name, detail, severity);
 }
 
 function actionFor({recommendation, riskTags, candidate}) {
@@ -46,23 +50,23 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
 
   if (candidate.amount >= 1000) reasonTags.push(tag('high-reward', `${candidate.currency} ${candidate.amount}`));
   else if (candidate.amount >= 250) reasonTags.push(tag('solid-reward', `${candidate.currency} ${candidate.amount}`));
-  else riskTags.push(tag('low-reward', `${candidate.currency} ${candidate.amount}`));
+  else riskTags.push(risk('low-reward', `${candidate.currency} ${candidate.amount}`, 'medium'));
 
   if (freshnessDays <= 3) reasonTags.push(tag('fresh', `updated ${Math.round(freshnessDays)} day(s) ago`));
-  else if (freshnessDays >= 21) riskTags.push(tag('stale', `updated ${Math.round(freshnessDays)} day(s) ago`));
+  else if (freshnessDays >= 21) riskTags.push(risk('stale', `updated ${Math.round(freshnessDays)} day(s) ago`, 'medium'));
 
   if (candidate.pullRequestCount === 0) reasonTags.push(tag('no-linked-prs', 'no linked or mentioned PRs found'));
   else if (candidate.pullRequestCount <= 1) reasonTags.push(tag('low-competition', `${candidate.pullRequestCount} linked PR(s)`));
-  else if (candidate.pullRequestCount >= 4) riskTags.push(tag('crowded', `${candidate.pullRequestCount} linked PR(s)`));
-  else riskTags.push(tag('some-competition', `${candidate.pullRequestCount} linked PR(s)`));
+  else if (candidate.pullRequestCount >= 4) riskTags.push(risk('crowded', `${candidate.pullRequestCount} linked PR(s)`, 'high'));
+  else riskTags.push(risk('some-competition', `${candidate.pullRequestCount} linked PR(s)`, 'low'));
 
-  if (candidate.state !== 'open') riskTags.push(tag('not-open', `issue state is ${candidate.state}`));
-  if (hasAny(fullText, SPECIAL_REQUIREMENT_KEYWORDS)) riskTags.push(tag('special-requirements', 'may need specific hardware, account, or platform access'));
-  if (hasAny(fullText, UNCLEAR_KEYWORDS)) riskTags.push(tag('unclear', 'wording suggests investigation or uncertainty'));
+  if (candidate.state !== 'open') riskTags.push(risk('not-open', `issue state is ${candidate.state}`, 'high'));
+  if (hasAny(fullText, SPECIAL_REQUIREMENT_KEYWORDS)) riskTags.push(risk('special-requirements', 'may need specific hardware, account, or platform access', 'high'));
+  if (hasAny(fullText, UNCLEAR_KEYWORDS)) riskTags.push(risk('unclear', 'wording suggests investigation or uncertainty', 'high'));
 
-  if (text.trim().length < 120) riskTags.push(tag('thin-description', 'issue body is short'));
+  if (text.trim().length < 120) riskTags.push(risk('thin-description', 'issue body is short', 'low'));
   if (hasAny(fullText, REPRO_KEYWORDS)) reasonTags.push(tag('repro-signal', 'description appears to include reproduction or expected/actual behavior'));
-  else riskTags.push(tag('no-repro-signal', 'no obvious reproduction keywords found'));
+  else riskTags.push(risk('no-repro-signal', 'no obvious reproduction keywords found', 'medium'));
 
   let recommendation = 'consider';
   if (candidate.state !== 'open') recommendation = 'skip';

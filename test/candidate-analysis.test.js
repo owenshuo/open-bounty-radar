@@ -35,6 +35,7 @@ test('marks crowded candidates as risky', () => {
   assert.equal(analysis.recommendation, 'risky');
   assert.equal(analysis.action, 'manual-review');
   assert.ok(analysis.riskTags.some((item) => item.name === 'crowded'));
+  assert.ok(analysis.riskTags.some((item) => item.name === 'crowded' && item.severity === 'high'));
 });
 
 test('marks closed candidates as skip', () => {
@@ -42,6 +43,7 @@ test('marks closed candidates as skip', () => {
   assert.equal(analysis.recommendation, 'skip');
   assert.equal(analysis.action, 'skip');
   assert.ok(analysis.riskTags.some((item) => item.name === 'not-open'));
+  assert.ok(analysis.riskTags.some((item) => item.name === 'not-open' && item.severity === 'high'));
 });
 
 test('detects special requirement and thin description risks', () => {
@@ -49,7 +51,9 @@ test('detects special requirement and thin description risks', () => {
   assert.equal(analysis.recommendation, 'risky');
   assert.equal(analysis.action, 'manual-review');
   assert.ok(analysis.riskTags.some((item) => item.name === 'special-requirements'));
+  assert.ok(analysis.riskTags.some((item) => item.name === 'special-requirements' && item.severity === 'high'));
   assert.ok(analysis.riskTags.some((item) => item.name === 'thin-description'));
+  assert.ok(analysis.riskTags.some((item) => item.name === 'thin-description' && item.severity === 'low'));
 });
 
 test('marks modest competition as watch', () => {
@@ -59,4 +63,5 @@ test('marks modest competition as watch', () => {
 
   assert.equal(analysis.recommendation, 'consider');
   assert.equal(analysis.action, 'watch');
+  assert.ok(analysis.riskTags.some((item) => item.name === 'some-competition' && item.severity === 'low'));
 });

@@ -31,7 +31,7 @@ test('renders scan HTML reports with escaped content', () => {
           action: 'act-now',
           recommendation: 'strong',
           reasonTags: [{name: 'no-linked-prs', detail: 'none found'}],
-          riskTags: [{name: 'no-repro-signal', detail: 'no keywords'}],
+          riskTags: [{name: 'no-repro-signal', detail: 'no keywords', severity: 'medium'}],
         },
       },
     ],
@@ -48,6 +48,7 @@ test('renders scan HTML reports with escaped content', () => {
   assert.match(html, /&lt;b&gt;competing&lt;\/b&gt;/);
   assert.match(html, /strong/);
   assert.match(html, /no-repro-signal/);
+  assert.match(html, /medium\/no-repro-signal/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.doesNotMatch(html, /<script>alert/);
 });

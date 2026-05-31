@@ -37,6 +37,7 @@ This project turns that manual research into a repeatable scan and report.
 - Reads GitHub issue timeline cross-references to catch linked PRs search can miss
 - Scores candidates by bounty amount, freshness, open state, and PR competition
 - Adds recommendation and risk tags such as `strong`, `risky`, `crowded`, and `special-requirements`
+- Assigns risk severity levels so high-risk blockers stand out from minor warnings
 - Adds action labels such as `act-now`, `watch`, `manual-review`, and `skip`
 - Highlights top candidates so the report opens with the most actionable issues
 - Shows linked PR competition details with state, update date, and detection source

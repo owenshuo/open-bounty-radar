@@ -18,7 +18,7 @@ function prSummary(candidate) {
 
 function tagSummary(tags) {
   if (!tags?.length) return 'none';
-  return tags.map((item) => `${item.name}: ${item.detail}`).join('; ');
+  return tags.map((item) => `${item.severity ? `${item.severity}/` : ''}${item.name}: ${item.detail}`).join('; ');
 }
 
 function prDetails(candidate) {

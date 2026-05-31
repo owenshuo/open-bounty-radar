@@ -84,6 +84,14 @@ Reports include an action label beside the recommendation:
 - `skip`: closed, unsuitable, or too risky for normal triage.
 - `consider`: default middle ground when the signal is useful but not urgent.
 
+## Risk Severity
+
+Risk tags include a severity level so reports can separate small warnings from blockers:
+
+- `high`: closed issues, crowded issues, unclear requirements, or special account/platform requirements.
+- `medium`: stale issues, low reward, or missing reproduction signal.
+- `low`: modest competition or thin descriptions that still may be workable.
+
 ## Future Scoring Inputs
 
 Good future improvements:
