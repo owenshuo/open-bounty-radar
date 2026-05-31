@@ -1,0 +1,12 @@
+{
+  "scan": {
+    "enabled": true,
+    "config": "./examples/config.json",
+    "out": "./reports/bounty-report.md",
+    "json": "./reports/bounty-report.json"
+  },
+  "watch": {
+    "enabled": false,
+    "config": "./examples/watchlist.json"
+  }
+}

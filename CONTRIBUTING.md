@@ -7,10 +7,17 @@ Thanks for considering a contribution to Open Bounty Radar.
 ```bash
 npm install
 npm test
-npm run scan
+npm run radar
 ```
 
 The project intentionally keeps the MVP dependency-light. Please avoid adding a package unless it removes meaningful maintenance burden.
+
+Useful focused commands:
+
+```bash
+npm run scan
+npm run watch
+```
 
 ## Good first contributions
 
@@ -18,7 +25,9 @@ The project intentionally keeps the MVP dependency-light. Please avoid adding a 
 - Improve GitHub linked PR detection
 - Add fixtures for bounty amount parsing
 - Improve scoring explanations
-- Add notification outputs such as Telegram, Discord, or email
+- Add notification outputs such as Discord or email
+- Add platform adapters for Algora, Opire, or other GitHub-linked bounty sites
+- Improve documentation in `docs/`
 
 ## Project rules
 

@@ -44,6 +44,14 @@ npm run radar
 
 Outputs are written to `reports/` by default.
 
+## Guides
+
+- [Configuration Guide](docs/configuration.md)
+- [Bounty Platform Notes](docs/bounty-platforms.md)
+- [Bounty Contributor Checklist](docs/contributor-checklist.md)
+- [Pull Request Quality Checklist](docs/pr-quality-checklist.md)
+- [Scoring Guide](docs/scoring-guide.md)
+
 To run each job separately:
 
 ```bash
@@ -103,6 +111,11 @@ npm run radar
 ```
 
 You can disable either section by setting `"enabled": false`.
+
+Additional example profiles:
+
+- `examples/radar.minimal.json`: scan-only starter profile.
+- `examples/radar.full.json`: explicit scan + watch profile for copying.
 
 ### Scan Config
 
