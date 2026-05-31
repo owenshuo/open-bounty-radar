@@ -28,6 +28,7 @@ test('renders scan HTML reports with escaped content', () => {
         updatedAt: '2026-01-01T00:00:00Z',
         score: {total: 42},
         analysis: {
+          action: 'act-now',
           recommendation: 'strong',
           reasonTags: [{name: 'no-linked-prs', detail: 'none found'}],
           riskTags: [{name: 'no-repro-signal', detail: 'no keywords'}],
@@ -42,6 +43,7 @@ test('renders scan HTML reports with escaped content', () => {
   assert.match(html, /<!doctype html>/);
   assert.match(html, /Open Bounty Radar Report/);
   assert.match(html, /Top Candidates/);
+  assert.match(html, /act-now/);
   assert.match(html, /Competition Details/);
   assert.match(html, /&lt;b&gt;competing&lt;\/b&gt;/);
   assert.match(html, /strong/);

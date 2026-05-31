@@ -28,6 +28,16 @@ function tag(name, detail) {
   return {name, detail};
 }
 
+function actionFor({recommendation, riskTags, candidate}) {
+  const risks = new Set(riskTags.map((item) => item.name));
+
+  if (recommendation === 'skip') return 'skip';
+  if (recommendation === 'strong') return 'act-now';
+  if (risks.has('crowded') || risks.has('unclear') || risks.has('special-requirements')) return 'manual-review';
+  if (candidate.pullRequestCount > 0 || recommendation === 'risky') return 'watch';
+  return 'consider';
+}
+
 export function analyzeCandidate(candidate, {text = ''} = {}) {
   const reasonTags = [];
   const riskTags = [];
@@ -61,6 +71,7 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
 
   return {
     recommendation,
+    action: actionFor({recommendation, riskTags, candidate}),
     reasonTags,
     riskTags,
   };

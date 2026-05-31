@@ -74,6 +74,16 @@ Reports include linked PR details for each candidate:
 - last update date
 - detection source, such as `search`, `timeline`, or `search+timeline`
 
+## Action Labels
+
+Reports include an action label beside the recommendation:
+
+- `act-now`: strong candidate with meaningful reward and low competition.
+- `watch`: usable candidate with some competition or a reason to monitor before starting.
+- `manual-review`: risky candidate that may still be worth reading because of high reward or unclear requirements.
+- `skip`: closed, unsuitable, or too risky for normal triage.
+- `consider`: default middle ground when the signal is useful but not urgent.
+
 ## Future Scoring Inputs
 
 Good future improvements:

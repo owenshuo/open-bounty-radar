@@ -57,6 +57,7 @@ function topCandidatesHtml(candidates) {
       (candidate) => `
         <li>
           <a href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a>
+          <span class="pill ${candidate.analysis?.action === 'act-now' ? 'low' : candidate.analysis?.action === 'skip' ? 'high' : candidate.analysis?.action === 'manual-review' ? 'medium' : ''}">${escapeHtml(candidate.analysis?.action ?? 'consider')}</span>
           <span class="pill ${candidate.analysis?.recommendation === 'strong' ? 'low' : candidate.analysis?.recommendation === 'risky' ? 'medium' : ''}">${escapeHtml(candidate.analysis?.recommendation ?? 'unknown')}</span>
           <span class="muted">score ${escapeHtml(candidate.score.total)} / ${escapeHtml(money(candidate))}</span>
           <div>${escapeHtml(candidate.title)}</div>
@@ -198,6 +199,7 @@ export function renderScanHtmlReport(report) {
       (candidate) => `
         <tr>
           <td>${escapeHtml(candidate.score.total)}</td>
+          <td><span class="pill ${candidate.analysis?.action === 'act-now' ? 'low' : candidate.analysis?.action === 'skip' ? 'high' : candidate.analysis?.action === 'manual-review' ? 'medium' : ''}">${escapeHtml(candidate.analysis?.action ?? 'consider')}</span></td>
           <td><span class="pill ${candidate.analysis?.recommendation === 'strong' ? 'low' : candidate.analysis?.recommendation === 'risky' ? 'medium' : candidate.analysis?.recommendation === 'skip' ? 'high' : ''}">${escapeHtml(candidate.analysis?.recommendation ?? 'unknown')}</span></td>
           <td>${escapeHtml(money(candidate))}</td>
           <td><a href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a><div>${escapeHtml(candidate.title)}</div></td>
@@ -216,7 +218,7 @@ export function renderScanHtmlReport(report) {
     <h2>Candidates</h2>
     ${
       rows
-        ? `<table><thead><tr><th>Score</th><th>Recommendation</th><th>Bounty</th><th>Issue</th><th>Competition</th><th>Risks</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
+        ? `<table><thead><tr><th>Score</th><th>Action</th><th>Recommendation</th><th>Bounty</th><th>Issue</th><th>Competition</th><th>Risks</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
         : '<p class="muted">No bounty candidates matched the current filters.</p>'
     }
     ${competitionDetailsHtml(report.candidates)}

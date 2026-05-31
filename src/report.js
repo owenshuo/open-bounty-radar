@@ -57,7 +57,7 @@ function appendTopCandidates(lines, candidates) {
   for (const candidate of top) {
     const reasons = tagSummary(candidate.analysis?.reasonTags);
     const risks = tagSummary(candidate.analysis?.riskTags);
-    lines.push(`- [${candidate.repository}#${candidate.number}](${candidate.url}) ${candidate.analysis?.recommendation ?? 'unknown'} / score ${candidate.score.total} / ${money(candidate)}`);
+    lines.push(`- [${candidate.repository}#${candidate.number}](${candidate.url}) ${candidate.analysis?.action ?? 'consider'} / ${candidate.analysis?.recommendation ?? 'unknown'} / score ${candidate.score.total} / ${money(candidate)}`);
     lines.push(`  - Why: ${reasons}`);
     lines.push(`  - Risks: ${risks}`);
   }
@@ -92,11 +92,11 @@ export function renderMarkdownReport(report) {
   appendChanges(lines, report);
   appendTopCandidates(lines, report.candidates);
 
-  lines.push('| Score | Recommendation | Bounty | Issue | Competition | Risks | Updated |');
-  lines.push('| ---: | --- | --- | --- | --- | --- | --- |');
+  lines.push('| Score | Action | Recommendation | Bounty | Issue | Competition | Risks | Updated |');
+  lines.push('| ---: | --- | --- | --- | --- | --- | --- | --- |');
   for (const candidate of report.candidates) {
     lines.push(
-      `| ${candidate.score.total} | ${candidate.analysis?.recommendation ?? 'unknown'} | ${money(candidate)} | [${candidate.repository}#${candidate.number}: ${candidate.title.replaceAll('|', '\\|')}](${candidate.url}) | ${prSummary(candidate)} | ${tagSummary(candidate.analysis?.riskTags).replaceAll('|', '\\|')} | ${candidate.updatedAt.slice(0, 10)} |`,
+      `| ${candidate.score.total} | ${candidate.analysis?.action ?? 'consider'} | ${candidate.analysis?.recommendation ?? 'unknown'} | ${money(candidate)} | [${candidate.repository}#${candidate.number}: ${candidate.title.replaceAll('|', '\\|')}](${candidate.url}) | ${prSummary(candidate)} | ${tagSummary(candidate.analysis?.riskTags).replaceAll('|', '\\|')} | ${candidate.updatedAt.slice(0, 10)} |`,
     );
   }
 
@@ -108,6 +108,7 @@ export function renderMarkdownReport(report) {
     lines.push(`- Bounty: ${money(candidate)} (${candidate.rawAmount})`);
     lines.push(`- State: ${candidate.state}`);
     lines.push(`- Labels: ${candidate.labels.length ? candidate.labels.join(', ') : 'none'}`);
+    lines.push(`- Action: ${candidate.analysis?.action ?? 'consider'}`);
     lines.push(`- Recommendation: ${candidate.analysis?.recommendation ?? 'unknown'}`);
     lines.push(`- Why: ${tagSummary(candidate.analysis?.reasonTags)}`);
     lines.push(`- Risks: ${tagSummary(candidate.analysis?.riskTags)}`);

@@ -18,6 +18,7 @@ Generated: 2026-05-31T00:00:00.000Z
 ## Top Candidates
 
 - owner/repo#123 - Add retry support for delayed artifacts
+  - Action: act-now
   - Recommendation: strong
   - Bounty: USD 1,500
   - Why: solid-reward, fresh, low-competition
@@ -28,6 +29,7 @@ Generated: 2026-05-31T00:00:00.000Z
 ### owner/repo#123
 
 - Bounty: USD 1,500
+- Action: act-now
 - Recommendation: strong
 - Why: solid-reward: detected meaningful reward; fresh: issue was updated recently
 - Risks: none
