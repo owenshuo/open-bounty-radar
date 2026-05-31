@@ -2,12 +2,25 @@
 
 Open Bounty Radar is a small CLI for discovering and monitoring paid open-source issues, bounty-style GitHub issues, and competitive pull request opportunities.
 
+It helps turn scattered bounty research into a repeatable workflow:
+
+```text
+configure repos -> scan bounty issues -> score candidates -> inspect competition -> watch submitted PRs
+```
+
 It is designed for developers who want to find issues that are:
 
 - still open
 - clearly paid or bounty-backed
 - not already crowded by many pull requests
 - practical to review quickly from a Linux-friendly development workflow
+
+## Who this is for
+
+- Independent developers who want a practical bounty radar instead of manually refreshing GitHub searches.
+- Open-source contributors who need to avoid already-crowded or already-solved issues.
+- Small teams tracking submitted bounty PRs, maintainer comments, checks, and competitor movement.
+- Builders who want a local-first workflow with explainable scoring and no hosted service requirement.
 
 ## Why this exists
 
@@ -59,13 +72,26 @@ Markdown, JSON, and static HTML reports are written to `reports/` by default.
 
 Local config files are ignored by git so you can customize them safely.
 
+## 5-Minute Tour
+
+1. Run `npm run init` to create local config files.
+2. Edit `bounty-radar.config.json` and add repositories or search queries you care about.
+3. Run `npm run validate` to catch config mistakes without using GitHub API calls.
+4. Run `npm run radar` to create Markdown, JSON, and HTML reports.
+5. Open `reports/bounty-report.html` and start with the Top Candidates section.
+6. Add submitted PRs to `bounty-radar.watchlist.json`, then keep using `npm run radar` to monitor them.
+
+See [Demo Output](docs/demo-output.md) for a compact example of the generated reports.
+
 ## Guides
 
 - [Configuration Guide](docs/configuration.md)
+- [Demo Output](docs/demo-output.md)
 - [Bounty Platform Notes](docs/bounty-platforms.md)
 - [Bounty Contributor Checklist](docs/contributor-checklist.md)
 - [Pull Request Quality Checklist](docs/pr-quality-checklist.md)
 - [Scoring Guide](docs/scoring-guide.md)
+- [Roadmap](docs/roadmap.md)
 
 To run each job separately:
 
@@ -292,13 +318,16 @@ This is not meant to decide for you. It is meant to triage quickly.
 
 ## Roadmap
 
-- Algora adapter
-- Opire adapter
-- Gitpay and other bounty platform adapters
+The short version:
+
+- better setup diagnostics
+- richer HTML reports
+- Algora and Opire adapters
 - GitHub Actions scheduled reports
-- Email, Discord, and GitHub issue notifications
-- Local web dashboard
-- Maintainer assignment and winner-detection heuristics
+- maintainer assignment and winner-detection heuristics
+- local web dashboard
+
+See the full [Roadmap](docs/roadmap.md).
 
 ## Ethics
 
