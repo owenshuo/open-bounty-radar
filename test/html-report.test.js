@@ -17,6 +17,11 @@ test('renders scan HTML reports with escaped content', () => {
         pullRequestCount: 0,
         updatedAt: '2026-01-01T00:00:00Z',
         score: {total: 42},
+        analysis: {
+          recommendation: 'strong',
+          reasonTags: [{name: 'no-linked-prs', detail: 'none found'}],
+          riskTags: [{name: 'no-repro-signal', detail: 'no keywords'}],
+        },
       },
     ],
     errors: [],
@@ -26,6 +31,8 @@ test('renders scan HTML reports with escaped content', () => {
 
   assert.match(html, /<!doctype html>/);
   assert.match(html, /Open Bounty Radar Report/);
+  assert.match(html, /strong/);
+  assert.match(html, /no-repro-signal/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.doesNotMatch(html, /<script>alert/);
 });

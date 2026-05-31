@@ -14,6 +14,11 @@ function prSummary(candidate) {
   return `${candidate.pullRequestCount} PR(s): ${prs}`;
 }
 
+function tagSummary(tags) {
+  if (!tags?.length) return 'none';
+  return tags.map((item) => `${item.name}: ${item.detail}`).join('; ');
+}
+
 function appendChanges(lines, report) {
   if (!report.changeSummary) return;
 
@@ -57,11 +62,11 @@ export function renderMarkdownReport(report) {
 
   appendChanges(lines, report);
 
-  lines.push('| Score | Bounty | Issue | Competition | Updated |');
-  lines.push('| ---: | --- | --- | --- | --- |');
+  lines.push('| Score | Recommendation | Bounty | Issue | Competition | Risks | Updated |');
+  lines.push('| ---: | --- | --- | --- | --- | --- | --- |');
   for (const candidate of report.candidates) {
     lines.push(
-      `| ${candidate.score.total} | ${money(candidate)} | [${candidate.repository}#${candidate.number}: ${candidate.title.replaceAll('|', '\\|')}](${candidate.url}) | ${prSummary(candidate)} | ${candidate.updatedAt.slice(0, 10)} |`,
+      `| ${candidate.score.total} | ${candidate.analysis?.recommendation ?? 'unknown'} | ${money(candidate)} | [${candidate.repository}#${candidate.number}: ${candidate.title.replaceAll('|', '\\|')}](${candidate.url}) | ${prSummary(candidate)} | ${tagSummary(candidate.analysis?.riskTags).replaceAll('|', '\\|')} | ${candidate.updatedAt.slice(0, 10)} |`,
     );
   }
 
@@ -73,6 +78,9 @@ export function renderMarkdownReport(report) {
     lines.push(`- Bounty: ${money(candidate)} (${candidate.rawAmount})`);
     lines.push(`- State: ${candidate.state}`);
     lines.push(`- Labels: ${candidate.labels.length ? candidate.labels.join(', ') : 'none'}`);
+    lines.push(`- Recommendation: ${candidate.analysis?.recommendation ?? 'unknown'}`);
+    lines.push(`- Why: ${tagSummary(candidate.analysis?.reasonTags)}`);
+    lines.push(`- Risks: ${tagSummary(candidate.analysis?.riskTags)}`);
     lines.push(`- Competition: ${prSummary(candidate)}`);
     lines.push(`- PR detection: ${candidate.pullRequestDetection ?? 'search'}`);
     if (candidate.pullRequestDetectionWarnings?.length) lines.push(`- PR detection warnings: ${candidate.pullRequestDetectionWarnings.join('; ')}`);

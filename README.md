@@ -23,6 +23,7 @@ This project turns that manual research into a repeatable scan and report.
 - Searches for pull requests that mention each issue
 - Reads GitHub issue timeline cross-references to catch linked PRs search can miss
 - Scores candidates by bounty amount, freshness, open state, and PR competition
+- Adds recommendation and risk tags such as `strong`, `risky`, `crowded`, and `special-requirements`
 - Writes Markdown and optional JSON reports
 - Watches submitted pull requests for merge/close state, checks, reviews, and maintainer comments
 - Stores state snapshots and detects meaningful changes between runs

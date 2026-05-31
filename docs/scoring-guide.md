@@ -10,6 +10,7 @@ The score is a triage signal, not an automatic decision.
 - Issue freshness
 - Open or closed state
 - Linked PR competition count
+- Lightweight issue text signals for recommendation and risk tags
 
 ## Current Behavior
 
@@ -26,6 +27,36 @@ Lower scores usually mean:
 - the issue is stale
 - the issue is closed
 - multiple competing PRs already exist
+
+## Recommendation Tags
+
+Each candidate can include a recommendation:
+
+- `strong`: good amount, open, fresh enough, and low linked PR competition
+- `consider`: potentially useful but not clearly strong
+- `risky`: visible risk such as crowded PR competition, unclear wording, or special access requirements
+- `skip`: currently unsuitable, usually because the issue is not open
+
+Reason tags explain why a candidate looks promising:
+
+- `high-reward`
+- `solid-reward`
+- `fresh`
+- `no-linked-prs`
+- `low-competition`
+- `repro-signal`
+
+Risk tags explain why a candidate may be poor:
+
+- `low-reward`
+- `stale`
+- `crowded`
+- `some-competition`
+- `not-open`
+- `special-requirements`
+- `unclear`
+- `thin-description`
+- `no-repro-signal`
 
 ## Linked PR Detection
 

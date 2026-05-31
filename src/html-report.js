@@ -22,6 +22,11 @@ function checksText(checks) {
   return `failing (${checks.failing}/${checks.total})`;
 }
 
+function tagsHtml(tags, className = '') {
+  if (!tags?.length) return '<span class="muted">none</span>';
+  return tags.map((item) => `<span class="pill ${className}" title="${escapeHtml(item.detail)}">${escapeHtml(item.name)}</span>`).join(' ');
+}
+
 function changeList(report) {
   if (!report.changeSummary) return '';
   if (!report.changes?.length) return '<p class="muted">No changes detected since the previous state snapshot.</p>';
@@ -136,9 +141,11 @@ export function renderScanHtmlReport(report) {
       (candidate) => `
         <tr>
           <td>${escapeHtml(candidate.score.total)}</td>
+          <td><span class="pill ${candidate.analysis?.recommendation === 'strong' ? 'low' : candidate.analysis?.recommendation === 'risky' ? 'medium' : candidate.analysis?.recommendation === 'skip' ? 'high' : ''}">${escapeHtml(candidate.analysis?.recommendation ?? 'unknown')}</span></td>
           <td>${escapeHtml(money(candidate))}</td>
           <td><a href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a><div>${escapeHtml(candidate.title)}</div></td>
           <td>${escapeHtml(candidate.pullRequestCount)} PR(s)</td>
+          <td>${tagsHtml(candidate.analysis?.riskTags, 'medium')}</td>
           <td>${escapeHtml(dateOnly(candidate.updatedAt))}</td>
         </tr>`,
     )
@@ -150,7 +157,7 @@ export function renderScanHtmlReport(report) {
     <h2>Candidates</h2>
     ${
       rows
-        ? `<table><thead><tr><th>Score</th><th>Bounty</th><th>Issue</th><th>Competition</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
+        ? `<table><thead><tr><th>Score</th><th>Recommendation</th><th>Bounty</th><th>Issue</th><th>Competition</th><th>Risks</th><th>Updated</th></tr></thead><tbody>${rows}</tbody></table>`
         : '<p class="muted">No bounty candidates matched the current filters.</p>'
     }
   `;

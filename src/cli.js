@@ -1,5 +1,6 @@
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {analyzeCandidate} from './candidate-analysis.js';
 import {detectReportChanges} from './changes.js';
 import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
 import {GitHubClient} from './github.js';
@@ -141,7 +142,8 @@ async function scanRepository(client, repoConfig, defaults) {
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const bounty = findBountyAmount(`${issue.title}\n\n${issue.body ?? ''}`);
+      const issueText = `${issue.title}\n\n${issue.body ?? ''}`;
+      const bounty = findBountyAmount(issueText);
       if (!bounty) continue;
 
       const linkedPullRequests = await findLinkedPullRequests(client, {
@@ -177,7 +179,8 @@ async function scanRepository(client, repoConfig, defaults) {
         })),
       };
 
-      candidates.push({...candidate, score: scoreCandidate(candidate)});
+      const scored = {...candidate, score: scoreCandidate(candidate)};
+      candidates.push({...scored, analysis: analyzeCandidate(scored, {text: issueText})});
     }
   }
 
