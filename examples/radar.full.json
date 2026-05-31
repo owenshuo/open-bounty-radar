@@ -3,12 +3,14 @@
     "enabled": true,
     "config": "./examples/config.json",
     "out": "./reports/bounty-report.md",
-    "json": "./reports/bounty-report.json"
+    "json": "./reports/bounty-report.json",
+    "html": "./reports/bounty-report.html"
   },
   "watch": {
     "enabled": true,
     "config": "./examples/watchlist.json",
     "out": "./reports/pr-watch.md",
-    "json": "./reports/pr-watch.json"
+    "json": "./reports/pr-watch.json",
+    "html": "./reports/pr-watch.html"
   }
 }

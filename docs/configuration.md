@@ -18,18 +18,26 @@ The radar config points to the scan and watch configs:
     "enabled": true,
     "config": "./examples/config.json",
     "out": "./reports/bounty-report.md",
-    "json": "./reports/bounty-report.json"
+    "json": "./reports/bounty-report.json",
+    "html": "./reports/bounty-report.html"
   },
   "watch": {
     "enabled": true,
     "config": "./examples/watchlist.json",
     "out": "./reports/pr-watch.md",
-    "json": "./reports/pr-watch.json"
+    "json": "./reports/pr-watch.json",
+    "html": "./reports/pr-watch.html"
   }
 }
 ```
 
 Set `"enabled": false` to turn off either job.
+
+Each enabled job can write:
+
+- `out`: Markdown report
+- `json`: machine-readable JSON report
+- `html`: static HTML report for browser viewing
 
 ## Scan Config
 

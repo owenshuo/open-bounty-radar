@@ -8,10 +8,10 @@
   },
   "scripts": {
     "radar": "node ./bin/open-bounty-radar.js radar --config ./examples/radar.json",
-    "scan": "node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json",
-    "watch": "node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json",
-    "scan:notify": "node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json --state ./reports/radar-state.json --notify",
-    "watch:notify": "node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json --state ./reports/radar-state.json --notify",
+    "scan": "node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json --html ./reports/bounty-report.html",
+    "watch": "node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json --html ./reports/pr-watch.html",
+    "scan:notify": "node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json --html ./reports/bounty-report.html --state ./reports/radar-state.json --notify",
+    "watch:notify": "node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json --html ./reports/pr-watch.html --state ./reports/radar-state.json --notify",
     "test": "node --test"
   },
   "keywords": [

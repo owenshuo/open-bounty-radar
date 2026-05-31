@@ -3,6 +3,7 @@ import path from 'node:path';
 import {detectReportChanges} from './changes.js';
 import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
 import {GitHubClient} from './github.js';
+import {renderScanHtmlReport, renderWatchHtmlReport} from './html-report.js';
 import {findLinkedPullRequests} from './linked-prs.js';
 import {findBountyAmount} from './money.js';
 import {formatChangesMessage, sendTelegramMessage} from './notify.js';
@@ -13,12 +14,13 @@ import {classifyPullRequest, latestActivity, needsAttention, summarizeChecks} fr
 import {renderWatchReport} from './watch-report.js';
 
 function parseArgs(args) {
-  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, state: null, notify: false};
+  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, html: null, state: null, notify: false};
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--config') parsed.config = args[++index];
     else if (arg === '--out') parsed.out = args[++index];
     else if (arg === '--json') parsed.json = args[++index];
+    else if (arg === '--html') parsed.html = args[++index];
     else if (arg === '--state') parsed.state = args[++index];
     else if (arg === '--notify') parsed.notify = true;
     else if (arg === '--help' || arg === '-h') parsed.command = 'help';
@@ -39,6 +41,7 @@ Options:
   --config <path>  JSON config file. Default: bounty-radar.config.json
   --out <path>     Markdown report path. Default: bounty-report.md
   --json <path>    Optional machine-readable JSON report path.
+  --html <path>    Optional static HTML report path.
   --state <path>   Optional state snapshot path for change detection.
   --notify         Send Telegram notification for detected changes.
 `);
@@ -243,9 +246,15 @@ async function runScan(parsed) {
     await writeFile(parsed.json, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   }
 
+  if (parsed.html) {
+    await ensureParent(parsed.html);
+    await writeFile(parsed.html, renderScanHtmlReport(report), 'utf8');
+  }
+
   console.log(`Found ${filtered.length} bounty candidate(s).`);
   console.log(`Markdown report: ${path.resolve(parsed.out)}`);
   if (parsed.json) console.log(`JSON report: ${path.resolve(parsed.json)}`);
+  if (parsed.html) console.log(`HTML report: ${path.resolve(parsed.html)}`);
 }
 
 async function runWatch(parsed) {
@@ -284,9 +293,15 @@ async function runWatch(parsed) {
     await writeFile(parsed.json, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   }
 
+  if (parsed.html) {
+    await ensureParent(parsed.html);
+    await writeFile(parsed.html, renderWatchHtmlReport(report), 'utf8');
+  }
+
   console.log(`Watched ${pullRequests.length} pull request(s).`);
   console.log(`Markdown report: ${path.resolve(parsed.out)}`);
   if (parsed.json) console.log(`JSON report: ${path.resolve(parsed.json)}`);
+  if (parsed.html) console.log(`HTML report: ${path.resolve(parsed.html)}`);
 }
 
 function sectionParsed(command, section, fallback) {
@@ -295,6 +310,7 @@ function sectionParsed(command, section, fallback) {
     config: section.config,
     out: section.out ?? fallback.out,
     json: section.json ?? fallback.json ?? null,
+    html: section.html ?? fallback.html ?? null,
     state: section.state ?? null,
     notify: Boolean(section.notify),
   };
@@ -310,6 +326,7 @@ async function runRadar(parsed) {
       sectionParsed('scan', config.scan, {
         out: './reports/bounty-report.md',
         json: './reports/bounty-report.json',
+        html: './reports/bounty-report.html',
       }),
     );
   }
@@ -320,6 +337,7 @@ async function runRadar(parsed) {
       sectionParsed('watch', config.watch, {
         out: './reports/pr-watch.md',
         json: './reports/pr-watch.json',
+        html: './reports/pr-watch.html',
       }),
     );
   }

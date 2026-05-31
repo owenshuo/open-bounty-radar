@@ -42,7 +42,7 @@ npm run radar
 - scan open bounty candidates
 - watch already-submitted pull requests
 
-Outputs are written to `reports/` by default.
+Markdown, JSON, and static HTML reports are written to `reports/` by default.
 
 ## Guides
 
@@ -93,13 +93,15 @@ The recommended one-command entrypoint is `examples/radar.json`:
     "enabled": true,
     "config": "./examples/config.json",
     "out": "./reports/bounty-report.md",
-    "json": "./reports/bounty-report.json"
+    "json": "./reports/bounty-report.json",
+    "html": "./reports/bounty-report.html"
   },
   "watch": {
     "enabled": true,
     "config": "./examples/watchlist.json",
     "out": "./reports/pr-watch.md",
-    "json": "./reports/pr-watch.json"
+    "json": "./reports/pr-watch.json",
+    "html": "./reports/pr-watch.html"
   }
 }
 ```
@@ -155,7 +157,7 @@ Create a JSON config:
 Then run:
 
 ```bash
-node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json
+node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json --html ./reports/bounty-report.html
 ```
 
 Add `--state` to compare this run with the previous run:
@@ -199,7 +201,7 @@ Create a watchlist:
 Then run:
 
 ```bash
-node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json
+node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json --html ./reports/pr-watch.html
 ```
 
 The watch report highlights PRs that need attention because they were closed, have failing checks, or received maintainer/owner activity.
