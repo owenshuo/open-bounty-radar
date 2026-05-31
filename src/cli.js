@@ -10,11 +10,13 @@ import {formatChangesMessage, sendTelegramMessage} from './notify.js';
 import {renderMarkdownReport} from './report.js';
 import {scoreCandidate} from './score.js';
 import {loadState, saveState, updateStateSnapshot} from './state.js';
+import {renderValidationResult, validateRadarConfig} from './validate.js';
 import {classifyPullRequest, latestActivity, needsAttention, summarizeChecks} from './watch.js';
 import {renderWatchReport} from './watch-report.js';
 
 function parseArgs(args) {
   const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, html: null, state: null, notify: false};
+  if (args[0] === '--help' || args[0] === '-h') parsed.command = 'help';
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--config') parsed.config = args[++index];
@@ -34,6 +36,7 @@ function printHelp() {
 
 Usage:
   open-bounty-radar radar --config ./examples/radar.json
+  open-bounty-radar validate --config ./examples/radar.json
   open-bounty-radar scan --config ./examples/config.json --out ./reports/bounty-report.md
   open-bounty-radar watch --config ./examples/watchlist.json --out ./reports/pr-watch.md
 
@@ -44,6 +47,12 @@ Options:
   --html <path>    Optional static HTML report path.
   --state <path>   Optional state snapshot path for change detection.
   --notify         Send Telegram notification for detected changes.
+
+Commands:
+  radar     Run enabled scan/watch jobs from one radar config.
+  validate  Validate configs without calling the GitHub API.
+  scan      Scan configured repositories for bounty candidates.
+  watch     Watch configured pull requests for status changes.
 `);
 }
 
@@ -345,6 +354,12 @@ async function runRadar(parsed) {
   console.log(`Radar run complete: ${enabledSections.join(' + ')}`);
 }
 
+async function runValidate(parsed) {
+  const result = await validateRadarConfig(parsed.config);
+  console.log(renderValidationResult(result));
+  if (!result.valid) throw new Error('Configuration validation failed.');
+}
+
 export async function runCli(args) {
   const parsed = parseArgs(args);
   if (!parsed.command || parsed.command === 'help') {
@@ -352,6 +367,7 @@ export async function runCli(args) {
     return;
   }
   if (parsed.command === 'radar') return runRadar(parsed);
+  if (parsed.command === 'validate') return runValidate(parsed);
   if (parsed.command === 'scan') return runScan(parsed);
   if (parsed.command === 'watch') return runWatch(parsed);
   throw new Error(`Unknown command: ${parsed.command}`);

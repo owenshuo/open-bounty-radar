@@ -7,6 +7,7 @@ Thanks for considering a contribution to Open Bounty Radar.
 ```bash
 npm install
 npm test
+npm run validate
 npm run radar
 ```
 

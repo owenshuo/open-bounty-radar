@@ -7,6 +7,7 @@ Open Bounty Radar uses JSON files so routine runs can stay one-command.
 Use `examples/radar.json` with:
 
 ```bash
+npm run validate
 npm run radar
 ```
 
@@ -32,6 +33,8 @@ The radar config points to the scan and watch configs:
 ```
 
 Set `"enabled": false` to turn off either job.
+
+`npm run validate` checks this file and the referenced scan/watch config files without calling the GitHub API.
 
 Each enabled job can write:
 
