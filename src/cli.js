@@ -4,6 +4,7 @@ import {detectReportChanges} from './changes.js';
 import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
 import {GitHubClient} from './github.js';
 import {renderScanHtmlReport, renderWatchHtmlReport} from './html-report.js';
+import {initializeLocalConfig, renderInitResult} from './init.js';
 import {findLinkedPullRequests} from './linked-prs.js';
 import {findBountyAmount} from './money.js';
 import {formatChangesMessage, sendTelegramMessage} from './notify.js';
@@ -15,7 +16,7 @@ import {classifyPullRequest, latestActivity, needsAttention, summarizeChecks} fr
 import {renderWatchReport} from './watch-report.js';
 
 function parseArgs(args) {
-  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, html: null, state: null, notify: false};
+  const parsed = {command: args[0], config: 'bounty-radar.config.json', out: 'bounty-report.md', json: null, html: null, state: null, notify: false, force: false};
   if (args[0] === '--help' || args[0] === '-h') parsed.command = 'help';
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
@@ -25,6 +26,7 @@ function parseArgs(args) {
     else if (arg === '--html') parsed.html = args[++index];
     else if (arg === '--state') parsed.state = args[++index];
     else if (arg === '--notify') parsed.notify = true;
+    else if (arg === '--force') parsed.force = true;
     else if (arg === '--help' || arg === '-h') parsed.command = 'help';
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -35,6 +37,7 @@ function printHelp() {
   console.log(`Open Bounty Radar
 
 Usage:
+  open-bounty-radar init
   open-bounty-radar radar --config ./examples/radar.json
   open-bounty-radar validate --config ./examples/radar.json
   open-bounty-radar scan --config ./examples/config.json --out ./reports/bounty-report.md
@@ -47,8 +50,10 @@ Options:
   --html <path>    Optional static HTML report path.
   --state <path>   Optional state snapshot path for change detection.
   --notify         Send Telegram notification for detected changes.
+  --force          Overwrite local config files when used with init.
 
 Commands:
+  init      Create local config files from examples.
   radar     Run enabled scan/watch jobs from one radar config.
   validate  Validate configs without calling the GitHub API.
   scan      Scan configured repositories for bounty candidates.
@@ -360,12 +365,18 @@ async function runValidate(parsed) {
   if (!result.valid) throw new Error('Configuration validation failed.');
 }
 
+async function runInit(parsed) {
+  const result = await initializeLocalConfig({force: parsed.force});
+  console.log(renderInitResult(result));
+}
+
 export async function runCli(args) {
   const parsed = parseArgs(args);
   if (!parsed.command || parsed.command === 'help') {
     printHelp();
     return;
   }
+  if (parsed.command === 'init') return runInit(parsed);
   if (parsed.command === 'radar') return runRadar(parsed);
   if (parsed.command === 'validate') return runValidate(parsed);
   if (parsed.command === 'scan') return runScan(parsed);

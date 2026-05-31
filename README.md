@@ -34,6 +34,7 @@ This project turns that manual research into a repeatable scan and report.
 git clone https://github.com/<your-user>/open-bounty-radar.git
 cd open-bounty-radar
 npm test
+npm run init
 npm run validate
 npm run radar
 ```
@@ -46,6 +47,14 @@ npm run radar
 Markdown, JSON, and static HTML reports are written to `reports/` by default.
 
 `npm run validate` checks the radar config and referenced scan/watch configs without making GitHub API calls.
+
+`npm run init` creates local config files from the examples:
+
+- `bounty-radar.json`
+- `bounty-radar.config.json`
+- `bounty-radar.watchlist.json`
+
+Local config files are ignored by git so you can customize them safely.
 
 ## Guides
 
@@ -66,6 +75,12 @@ To validate a custom radar config:
 
 ```bash
 node ./bin/open-bounty-radar.js validate --config ./examples/radar.full.json
+```
+
+To create local config files again and overwrite existing ones:
+
+```bash
+node ./bin/open-bounty-radar.js init --force
 ```
 
 To enable Telegram notifications without adding CLI flags, set `notifications.telegram.enabled` to `true` in `examples/config.json` and/or `examples/watchlist.json`, then run:

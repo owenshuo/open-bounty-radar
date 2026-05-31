@@ -7,6 +7,7 @@
     "open-bounty-radar": "./bin/open-bounty-radar.js"
   },
   "scripts": {
+    "init": "node ./bin/open-bounty-radar.js init",
     "radar": "node ./bin/open-bounty-radar.js radar --config ./examples/radar.json",
     "validate": "node ./bin/open-bounty-radar.js validate --config ./examples/radar.json",
     "scan": "node ./bin/open-bounty-radar.js scan --config ./examples/config.json --out ./reports/bounty-report.md --json ./reports/bounty-report.json --html ./reports/bounty-report.html",

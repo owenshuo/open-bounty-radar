@@ -1,3 +1,6 @@
 node_modules/
 reports/
 .env
+bounty-radar.json
+bounty-radar.config.json
+bounty-radar.watchlist.json
