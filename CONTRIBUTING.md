@@ -18,6 +18,7 @@ npm run scan:example
 - Run `npm test` and `npm run audit`.
 - Do not commit generated `reports/` output.
 - Do not include private tokens, workspace exports, or unpublished bounty work.
+- Follow the [Responsible Contribution Guide](docs/responsible-contribution.md) when using the project for bounty-related OSS work.
 
 ## Project Values
 

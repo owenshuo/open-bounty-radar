@@ -5,8 +5,8 @@
     "title": "Add retry-aware webhook delivery for failed automation jobs",
     "amount": 750,
     "currency": "USD",
-    "createdAt": "2026-05-20T08:00:00Z",
-    "updatedAt": "2026-05-24T12:00:00Z",
+    "createdAt": "2026-05-29T08:00:00Z",
+    "updatedAt": "2026-05-31T12:00:00Z",
     "pullRequestCount": 0,
     "description": "Build deterministic retry scheduling with clear tests. Steps to reproduce: webhook delivery fails once and never retries. Expected behavior: failed deliveries retry with backoff. Actual behavior: the event is dropped."
   },

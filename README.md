@@ -138,6 +138,7 @@ Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fix
 - [Demo Script](docs/demo-script.md)
 - [Demo Assets](docs/demo-assets.md)
 - [Codex for OSS Application Notes](docs/codex-for-oss.md)
+- [Responsible Contribution Guide](docs/responsible-contribution.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
 
