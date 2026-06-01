@@ -168,6 +168,15 @@ npm run scan
 npm run watch
 ```
 
+To run a broader discovery pass that keeps more candidates for review while still applying risk labels:
+
+```bash
+export GITHUB_TOKEN=github_pat_xxx
+npm run scan:discovery
+```
+
+Discovery mode uses more GitHub Search queries than the compact example, so a token is strongly recommended.
+
 To validate an example or custom radar config:
 
 ```bash

@@ -1,0 +1,53 @@
+{
+  "githubTokenEnv": "GITHUB_TOKEN",
+  "statePath": "./reports/discovery-state.json",
+  "workspacePath": "./reports/discovery-workspace.json",
+  "notifications": {
+    "notifyOnFirstRun": false,
+    "rules": {
+      "preset": "quiet",
+      "minSeverity": "medium",
+      "actions": ["act-now", "watch", "manual-review"],
+      "minAmount": 100,
+      "competitionRisks": ["none", "low", "medium"]
+    },
+    "telegram": {
+      "enabled": false,
+      "botTokenEnv": "TELEGRAM_BOT_TOKEN",
+      "chatIdEnv": "TELEGRAM_CHAT_ID"
+    },
+    "webhook": {
+      "enabled": false,
+      "urlEnv": "OPEN_BOUNTY_RADAR_WEBHOOK_URL"
+    }
+  },
+  "defaults": {
+    "maxIssuesPerQuery": 5,
+    "includeClosed": false,
+    "linkedPullRequestDetection": "both",
+    "competitionDetails": true,
+    "competitionDetailLimit": 8,
+    "commentSignalLimit": 50
+  },
+  "filters": {
+    "minAmount": 100,
+    "excludeKeywords": [
+      "marketing"
+    ]
+  },
+  "repositories": [
+    {
+      "owner": "Expensify",
+      "repo": "App",
+      "presets": [],
+      "queries": [
+        "$ in:title,body label:External",
+        "$250 in:title,body label:External",
+        "$500 in:title,body label:External",
+        "/bounty in:body label:External",
+        "reward in:title,body label:External",
+        "bounty in:title,body label:External"
+      ]
+    }
+  ]
+}

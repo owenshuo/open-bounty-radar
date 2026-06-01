@@ -4,6 +4,8 @@ export const SEARCH_PRESETS = {
   recent: ['created:>=@today-14d'],
   'low-competition': ['-linked:pr'],
   'crypto-bounty': ['USDC in:title,body', 'crypto bounty in:title,body', '/bounty in:body'],
+  reward: ['reward in:title,body', 'paid issue in:title,body', 'paid in:title,body'],
+  amounts: ['$250 in:title,body', '$500 in:title,body', '$1000 in:title,body'],
 };
 
 export function availableSearchPresets() {
