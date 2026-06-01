@@ -1,6 +1,7 @@
 import {analyzeCandidate} from './candidate-analysis.js';
 import {assessCandidate} from './ai-assessment.js';
 import {analyzePullRequestCompetition} from './competition.js';
+import {analyzeIssueComments} from './comment-signals.js';
 import {findLinkedPullRequests} from './linked-prs.js';
 import {findBountyAmount} from './money.js';
 import {scoreCandidate} from './score.js';
@@ -31,6 +32,7 @@ export async function inspectIssue(client, {issueUrl, defaults = {}}) {
     pullRequests: linked.pullRequests,
     limit: defaults.competitionDetailLimit ?? 8,
   });
+  const comments = client.listIssueComments ? await client.listIssueComments({fullName: issueRef.fullName, number: issueRef.number, perPage: defaults.commentSignalLimit ?? 50}).catch(() => []) : [];
 
   const candidate = {
     adapter: 'github',
@@ -48,6 +50,7 @@ export async function inspectIssue(client, {issueUrl, defaults = {}}) {
       assigned: (issue.assignees ?? []).length > 0,
       labelSignals: (issue.labels ?? []).map((label) => (typeof label === 'string' ? label : label.name)).filter((label) => /assigned|selected|winner|paid|completed/i.test(label ?? '')),
       timelineSignals: strategy === 'search' ? [] : issueTimelineSignals(await client.listIssueTimeline({fullName: issueRef.fullName, number: issueRef.number}).catch(() => [])),
+      commentSignals: analyzeIssueComments(comments),
     },
     amount: bounty.amount,
     currency: bounty.currency,

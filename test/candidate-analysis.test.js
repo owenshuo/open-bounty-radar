@@ -79,3 +79,44 @@ test('escalates candidates when competing PR analysis is strong', () => {
   assert.equal(analysis.action, 'manual-review');
   assert.ok(analysis.riskTags.some((item) => item.name === 'strong-competing-pr' && item.severity === 'high'));
 });
+
+test('does not downgrade simple interest comments', () => {
+  const analysis = analyzeCandidate(
+    candidate({
+      bountySignals: {commentSignals: {interestCount: 4, proposalCount: 0, reviewerActivity: false, fixedOrClosing: false}},
+    }),
+    {text: 'Steps to reproduce: open the page. Expected behavior: it works. Actual behavior: it fails.'},
+  );
+
+  assert.equal(analysis.recommendation, 'strong');
+  assert.equal(analysis.action, 'act-now');
+  assert.ok(analysis.reasonTags.some((item) => item.name === 'contributor-interest'));
+  assert.equal(analysis.riskTags.some((item) => item.name === 'proposal-crowded'), false);
+});
+
+test('downgrades crowded proposals and reviewer activity', () => {
+  const analysis = analyzeCandidate(
+    candidate({
+      bountySignals: {commentSignals: {interestCount: 2, proposalCount: 3, reviewerActivity: true, fixedOrClosing: false}},
+    }),
+    {text: 'Steps to reproduce: open the page. Expected behavior: it works. Actual behavior: it fails.'},
+  );
+
+  assert.equal(analysis.recommendation, 'risky');
+  assert.equal(analysis.action, 'manual-review');
+  assert.ok(analysis.riskTags.some((item) => item.name === 'proposal-crowded' && item.severity === 'high'));
+  assert.ok(analysis.riskTags.some((item) => item.name === 'maintainer-reviewing' && item.severity === 'high'));
+});
+
+test('skips comments that say the issue is fixed or closing', () => {
+  const analysis = analyzeCandidate(
+    candidate({
+      bountySignals: {commentSignals: {interestCount: 0, proposalCount: 0, reviewerActivity: false, fixedOrClosing: true}},
+    }),
+    {text: 'Steps to reproduce: open the page. Expected behavior: it works. Actual behavior: it fails.'},
+  );
+
+  assert.equal(analysis.recommendation, 'skip');
+  assert.equal(analysis.action, 'skip');
+  assert.ok(analysis.riskTags.some((item) => item.name === 'fixed-or-closing' && item.severity === 'high'));
+});

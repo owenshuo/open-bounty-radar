@@ -1,5 +1,6 @@
 import {analyzeCandidate} from '../candidate-analysis.js';
 import {analyzePullRequestCompetition} from '../competition.js';
+import {analyzeIssueComments} from '../comment-signals.js';
 import {findLinkedPullRequests} from '../linked-prs.js';
 import {findBountyAmount} from '../money.js';
 import {scoreCandidate} from '../score.js';
@@ -46,6 +47,8 @@ export const githubAdapter = {
           strategy: linkedPullRequestDetection,
         });
         const timelineSignals = linkedPullRequestDetection === 'search' ? [] : issueTimelineSignals(await client.listIssueTimeline({fullName, number: issue.number}).catch(() => []));
+        const comments = await client.listIssueComments({fullName, number: issue.number, perPage: defaults.commentSignalLimit ?? repoConfig.commentSignalLimit ?? 50}).catch(() => []);
+        const commentSignals = analyzeIssueComments(comments);
         const competition = competitionDetails
           ? await analyzePullRequestCompetition(client, {fullName, pullRequests: linkedPullRequests.pullRequests, limit: competitionDetailLimit}).catch((error) => ({
               pullRequests: linkedPullRequests.pullRequests,
@@ -73,6 +76,7 @@ export const githubAdapter = {
               .map((label) => (typeof label === 'string' ? label : label.name))
               .filter((label) => /assigned|selected|winner|paid|completed/i.test(label ?? '')),
             timelineSignals,
+            commentSignals,
           },
           amount: bounty.amount,
           currency: bounty.currency,

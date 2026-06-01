@@ -1,5 +1,6 @@
 import {analyzeCandidate} from './candidate-analysis.js';
 import {analyzePullRequestCompetition} from './competition.js';
+import {analyzeIssueComments} from './comment-signals.js';
 import {findLinkedPullRequests} from './linked-prs.js';
 import {scoreCandidate} from './score.js';
 import {issueTimelineSignals} from './timeline-signals.js';
@@ -26,6 +27,7 @@ export async function enrichExternalCandidateWithGitHub(client, candidate, defau
     : {pullRequests: linkedPullRequests.pullRequests, summary: null, warnings: []};
 
   const labels = labelNames(issue);
+  const comments = client.listIssueComments ? await client.listIssueComments({fullName, number: candidate.number, perPage: defaults.commentSignalLimit ?? 50}).catch(() => []) : [];
   const enriched = {
     ...candidate,
     title: issue.title ?? candidate.title,
@@ -39,6 +41,7 @@ export async function enrichExternalCandidateWithGitHub(client, candidate, defau
       assigned: (issue.assignees ?? []).length > 0,
       labelSignals: labels.filter((label) => /assigned|selected|winner|paid|completed/i.test(label)),
       timelineSignals: strategy === 'search' ? [] : issueTimelineSignals(await client.listIssueTimeline({fullName, number: candidate.number}).catch(() => [])),
+      commentSignals: analyzeIssueComments(comments),
     },
     pullRequestCount: competition.pullRequests.length,
     pullRequestDetection: strategy,
