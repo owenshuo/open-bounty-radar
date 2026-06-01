@@ -44,3 +44,29 @@ git push origin v0.1.0
 ```
 
 Publishing to npm is optional. The package is already shaped as a CLI through the `bin` field.
+
+## Suggested GitHub Release Notes
+
+Use a short public note that makes the project easy to evaluate:
+
+```text
+Open Bounty Radar v0.1.0 is the first public CLI release for discovering, scoring, and monitoring paid open-source issues and bounty-style pull request opportunities.
+
+Highlights:
+- Local-first scan and watch workflows.
+- Markdown, JSON, CSV, JSONL, static HTML, and dashboard outputs.
+- Linked PR competition analysis, readiness checks, watch insights, and notification rules.
+- GitHub Actions template, JSON schema, offline demo fixtures, release checks, and CI.
+
+Start with:
+npm test
+npm run init
+npm run doctor
+npm run radar
+
+For an offline demo:
+npm run demo:offline
+npm run serve
+```
+
+After publishing the release, add or verify repository topics: `open-source`, `bounty`, `github`, `cli`, `developer-tools`, `triage`, `pull-requests`, `oss`.

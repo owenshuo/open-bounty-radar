@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "A CLI radar for discovering and monitoring paid open-source issues and bounty-style pull request opportunities.",
   "type": "module",
+  "homepage": "https://github.com/owenshuo/open-bounty-radar#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/owenshuo/open-bounty-radar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/owenshuo/open-bounty-radar/issues"
+  },
   "bin": {
     "open-bounty-radar": "./bin/open-bounty-radar.js"
   },
@@ -38,7 +46,11 @@
     "opensource",
     "oss",
     "issues",
-    "pull-requests"
+    "pull-requests",
+    "triage",
+    "developer-tools",
+    "cli",
+    "open-source"
   ],
   "author": "",
   "license": "MIT",

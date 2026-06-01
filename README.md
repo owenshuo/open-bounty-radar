@@ -2,6 +2,8 @@
 
 [![Node.js >=20](https://img.shields.io/badge/node-%3E%3D20-116149)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-315f9f)](LICENSE)
+[![CI](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml)
+[![Release gate](https://img.shields.io/badge/release%20gate-release%3Acheck-315f9f)](docs/release.md)
 
 Open Bounty Radar is a small CLI for discovering and monitoring paid open-source issues, bounty-style GitHub issues, and competitive pull request opportunities.
 
@@ -30,6 +32,12 @@ It is designed for developers who want to find issues that are:
 Paid OSS issues are scattered across GitHub labels, issue bodies, platform comments, and project-specific conventions such as `/bounty $6000`. Developers waste time opening issues that are already solved, crowded, closed, or missing payment details.
 
 This project turns that manual research into a repeatable scan and report.
+
+## Project Status
+
+Open Bounty Radar is an early-stage OSS project with a working `0.1.0` CLI surface, documented configuration, offline demo fixtures, automated tests, CI, and a release checklist. The current goal is to make bounty-related OSS contribution more transparent and less duplicative, not to encourage rushed or spammy pull requests.
+
+Suggested repository topics: `open-source`, `bounty`, `github`, `cli`, `developer-tools`, `triage`, `pull-requests`, `oss`.
 
 ## Current MVP
 
@@ -112,6 +120,8 @@ npm run serve
 
 Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fixtures/demo-listings.json`, so this path is safe for screenshots, demos, and release smoke tests.
 
+![Open Bounty Radar demo dashboard](docs/assets/demo-dashboard.png)
+
 ## Guides
 
 - [Configuration Guide](docs/configuration.md)
@@ -127,6 +137,7 @@ Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fix
 - [Architecture](docs/architecture.md)
 - [Demo Script](docs/demo-script.md)
 - [Demo Assets](docs/demo-assets.md)
+- [Codex for OSS Application Notes](docs/codex-for-oss.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
 

@@ -2,7 +2,15 @@
 
 Open Bounty Radar is intentionally small, local-first, and dependency-light. The roadmap favors features that help contributors make better decisions before spending time on a bounty.
 
-## Near Term
+## Near Term Maintenance Priorities
+
+These issues are good candidates for GitHub roadmap issues before the next public release:
+
+- Improve the offline demo so reviewers can inspect a generated dashboard without a GitHub token.
+- Add screenshots or checked-in static demo artifacts for README and release notes.
+- Expand adapter documentation for GitHub-linked bounty platforms and their expected data shape.
+- Add npm publishing notes and package verification steps.
+- Improve contributor guidance for responsible bounty participation and duplicate PR avoidance.
 
 ### Setup Diagnostics
 
@@ -112,3 +120,13 @@ Current dashboard support is static HTML with client-side filters, search, top c
 - Prefer local files and portable JSON.
 - Keep the core CLI useful without hosted infrastructure.
 - Add dependencies only when they remove real maintenance cost.
+
+## Release Readiness Goals
+
+Before tagging a public release:
+
+- `npm run release:check` passes locally and in CI.
+- The README links to demo output, configuration docs, release notes, and security policy.
+- The GitHub repository has topics for discoverability.
+- At least one release note explains the user-facing workflow.
+- Any live adapter behavior is documented as best-effort and resilient to source changes.
