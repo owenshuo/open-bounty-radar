@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-315f9f)](LICENSE)
 [![CI](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml)
 [![Release gate](https://img.shields.io/badge/release%20gate-release%3Acheck-315f9f)](docs/release.md)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-116149)](https://owenshuo.github.io/open-bounty-radar/)
 
 Open Bounty Radar is a small CLI for discovering and monitoring paid open-source issues, bounty-style GitHub issues, and competitive pull request opportunities.
 
@@ -113,12 +114,14 @@ See [Demo Output](docs/demo-output.md) for a compact example of the generated re
 
 Want to try the UI without a GitHub token or live API calls?
 
+[Open the hosted demo dashboard](https://owenshuo.github.io/open-bounty-radar/) or run it locally:
+
 ```bash
 npm run demo:offline
 npm run serve
 ```
 
-Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fixtures/demo-listings.json`, so this path is safe for screenshots, demos, and release smoke tests.
+Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fixtures/demo-listings.json`, so this path is safe for hosted demos, screenshots, and release smoke tests.
 
 ![Open Bounty Radar demo dashboard](docs/assets/demo-dashboard.png)
 
