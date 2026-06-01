@@ -7,7 +7,7 @@ export async function loadJsonConfig(configPath) {
 
 export async function loadConfig(configPath) {
   const config = await loadJsonConfig(configPath);
-  const hasExternalSource = Boolean(config.algora || config.opire);
+  const hasExternalSource = Boolean(config.algora || config.opire || config.githubSearches?.length);
 
   if (!Array.isArray(config.repositories)) {
     throw new Error('Config must include a repositories array.');
@@ -21,6 +21,10 @@ export async function loadConfig(configPath) {
     if (!repository.owner || !repository.repo) {
       throw new Error('Each repository must include owner and repo.');
     }
+  }
+
+  if (config.githubSearches && !Array.isArray(config.githubSearches)) {
+    throw new Error('Config githubSearches must be an array when provided.');
   }
 
   return config;

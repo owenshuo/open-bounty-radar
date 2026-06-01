@@ -108,6 +108,26 @@ function validateScanConfig(config, configPath, env) {
     }
   }
 
+  if (config.githubSearches && !Array.isArray(config.githubSearches)) {
+    errors.push(`scan config ${configPath}: githubSearches must be an array when provided.`);
+  }
+
+  for (const [index, search] of (Array.isArray(config.githubSearches) ? config.githubSearches : []).entries()) {
+    const label = search.name ?? `githubSearches[${index}]`;
+    if (search.queries && !Array.isArray(search.queries)) {
+      errors.push(`scan config ${configPath}: ${label}.queries must be an array when provided.`);
+    }
+    if (search.presets && !Array.isArray(search.presets)) {
+      errors.push(`scan config ${configPath}: ${label}.presets must be an array when provided.`);
+    } else {
+      const invalidPresets = invalidRepositoryPresets(search);
+      if (invalidPresets.length) errors.push(`scan config ${configPath}: ${label} has invalid preset(s): ${invalidPresets.join(', ')}. Available presets: ${availableSearchPresets().join(', ')}.`);
+    }
+    if (!search.queries?.length && !search.presets?.length) {
+      warnings.push(`scan config ${configPath}: ${label} has no queries or presets.`);
+    }
+  }
+
   for (const platform of ['algora', 'opire']) {
     const source = config[platform];
     if (!source) continue;

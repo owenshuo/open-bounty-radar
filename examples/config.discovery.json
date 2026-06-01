@@ -23,6 +23,7 @@
   },
   "defaults": {
     "maxIssuesPerQuery": 5,
+    "globalMaxIssuesPerQuery": 3,
     "includeClosed": false,
     "linkedPullRequestDetection": "both",
     "competitionDetails": true,
@@ -32,7 +33,14 @@
   "filters": {
     "minAmount": 100,
     "excludeKeywords": [
-      "marketing"
+      "claim",
+      "claimed",
+      "hardware",
+      "marketing",
+      "MRWK",
+      "RTC",
+      "star",
+      "token"
     ]
   },
   "repositories": [
@@ -47,6 +55,28 @@
         "/bounty in:body label:External",
         "reward in:title,body label:External",
         "bounty in:title,body label:External"
+      ]
+    }
+  ],
+  "githubSearches": [
+    {
+      "name": "global-bounty-title-amounts",
+      "linkedPullRequestDetection": "search",
+      "competitionDetails": false,
+      "queries": [
+        "bounty in:title \"$100\" archived:false",
+        "bounty in:title \"$250\" archived:false",
+        "bounty in:title \"$300\" archived:false",
+        "bounty in:title \"$500\" archived:false"
+      ]
+    },
+    {
+      "name": "global-bounty-labels",
+      "linkedPullRequestDetection": "search",
+      "competitionDetails": false,
+      "queries": [
+        "label:bounty bounty in:title,body archived:false",
+        "\"bounty\" \"USDC\" in:title,body archived:false"
       ]
     }
   ]

@@ -9,5 +9,6 @@ test('ships a formal JSON schema for public configs', async () => {
   assert.ok(schema.$defs.radarConfig);
   assert.ok(schema.$defs.scanConfig);
   assert.ok(schema.$defs.watchConfig);
+  assert.ok(schema.$defs.githubSearch);
   assert.ok(schema.$defs.listingSource);
 });

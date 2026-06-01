@@ -42,7 +42,7 @@ Suggested repository topics: `open-source`, `bounty`, `github`, `cli`, `develope
 
 ## Current MVP
 
-- Scans configured GitHub repositories with GitHub Search API
+- Scans configured GitHub repositories and GitHub-wide issue searches with GitHub Search API
 - Detects bounty amounts such as `$250`, `$6k`, `/bounty $6000`, and `250 USDC`
 - Filters closed issues by default
 - Searches for pull requests that mention each issue
@@ -55,7 +55,7 @@ Suggested repository topics: `open-source`, `bounty`, `github`, `cli`, `develope
 - Highlights top candidates so the report opens with the most actionable issues
 - Shows linked PR competition details with state, update date, and detection source
 - Writes Markdown, JSON, static HTML, and dashboard reports
-- Supports GitHub search presets such as `bounty`, `external`, `recent`, `low-competition`, and `crypto-bounty`
+- Supports GitHub search presets such as `bounty`, `external`, `recent`, `low-competition`, `crypto-bounty`, `reward`, and `amounts`
 - Provides an interactive static dashboard with filters, search, copyable issue URLs, and candidate detail pages
 - Includes Algora and Opire adapter foundations with optional GitHub issue enrichment
 - Can extract GitHub-linked bounty listings from simple live HTML sources
@@ -103,7 +103,7 @@ Local config files are ignored by git so you can customize them safely.
 ## 5-Minute Tour
 
 1. Run `npm run init` to create local config files.
-2. Edit `bounty-radar.config.json` and add repositories or search queries you care about.
+2. Edit `bounty-radar.config.json` and add repositories or GitHub-wide search queries you care about.
 3. Run `npm run doctor` to confirm the local environment and GitHub API access.
 4. Run `npm run validate` to catch config mistakes without using GitHub API calls.
 5. Run `npm run radar` to create Markdown, JSON, and HTML reports.
@@ -301,6 +301,7 @@ Create a JSON config:
   },
   "defaults": {
     "maxIssuesPerQuery": 20,
+    "globalMaxIssuesPerQuery": 5,
     "includeClosed": false,
     "linkedPullRequestDetection": "both",
     "competitionDetails": true,
@@ -316,6 +317,12 @@ Create a JSON config:
       "owner": "Expensify",
       "repo": "App",
       "queries": ["$ in:title,body label:External"]
+    }
+  ],
+  "githubSearches": [
+    {
+      "name": "global-bounty-labels",
+      "queries": ["label:bounty $ in:title,body archived:false"]
     }
   ]
 }
@@ -471,7 +478,7 @@ The dashboard also supports importing a previously exported workspace JSON file 
 
 ## Config Schema
 
-A formal JSON Schema is included at `schema/open-bounty-radar.schema.json`. It covers the top-level radar config plus scan and watch config shapes, including GitHub repositories, Algora/Opire listing sources, notifications, workspace paths, and report outputs.
+A formal JSON Schema is included at `schema/open-bounty-radar.schema.json`. It covers the top-level radar config plus scan and watch config shapes, including GitHub repositories, GitHub-wide searches, Algora/Opire listing sources, notifications, workspace paths, and report outputs.
 
 ## Release Check
 

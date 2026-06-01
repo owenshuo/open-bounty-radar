@@ -7,6 +7,98 @@ import {scoreCandidate} from '../score.js';
 import {expandRepositoryQueries} from '../search-presets.js';
 import {issueTimelineSignals} from '../timeline-signals.js';
 
+function fullNameFromIssue(issue, fallbackFullName = null) {
+  if (fallbackFullName) return fallbackFullName;
+  if (issue.repository?.full_name) return issue.repository.full_name;
+  const match = /\/repos\/([^/]+\/[^/]+)$/i.exec(issue.repository_url ?? '');
+  if (match) return match[1];
+  const urlMatch = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/issues\/\d+/i.exec(issue.html_url ?? '');
+  if (urlMatch) return urlMatch[1];
+  throw new Error(`Cannot determine repository for issue ${issue.html_url ?? issue.number ?? 'unknown'}`);
+}
+
+async function candidateFromIssue({client, issue, fullName, defaults = {}, repoConfig = {}}) {
+  const issueFullName = fullNameFromIssue(issue, fullName);
+  const linkedPullRequestDetection = repoConfig.linkedPullRequestDetection ?? defaults.linkedPullRequestDetection ?? 'both';
+  const competitionDetails = repoConfig.competitionDetails ?? defaults.competitionDetails ?? true;
+  const competitionDetailLimit = repoConfig.competitionDetailLimit ?? defaults.competitionDetailLimit ?? 5;
+  const issueText = `${issue.title}\n\n${issue.body ?? ''}`;
+  const bounty = findBountyAmount(issueText);
+  if (!bounty) return null;
+
+  const linkedPullRequests = await findLinkedPullRequests(client, {
+    fullName: issueFullName,
+    issueNumber: issue.number,
+    issueUrl: issue.html_url,
+    strategy: linkedPullRequestDetection,
+  });
+  const timelineSignals = linkedPullRequestDetection === 'search' ? [] : issueTimelineSignals(await client.listIssueTimeline({fullName: issueFullName, number: issue.number}).catch(() => []));
+  const comments = await client.listIssueComments({fullName: issueFullName, number: issue.number, perPage: repoConfig.commentSignalLimit ?? defaults.commentSignalLimit ?? 50}).catch(() => []);
+  const commentSignals = analyzeIssueComments(comments);
+  const competition = competitionDetails
+    ? await analyzePullRequestCompetition(client, {fullName: issueFullName, pullRequests: linkedPullRequests.pullRequests, limit: competitionDetailLimit}).catch((error) => ({
+        pullRequests: linkedPullRequests.pullRequests,
+        summary: null,
+        warnings: [`competition details unavailable: ${error.message.split('\n')[0]}`],
+      }))
+    : {pullRequests: linkedPullRequests.pullRequests, summary: null, warnings: []};
+  const pullRequests = competition.pullRequests;
+
+  const candidate = {
+    adapter: 'github',
+    platform: 'GitHub',
+    repository: issueFullName,
+    number: issue.number,
+    title: issue.title,
+    url: issue.html_url,
+    state: issue.state,
+    createdAt: issue.created_at,
+    updatedAt: issue.updated_at,
+    labels: (issue.labels ?? []).map((label) => (typeof label === 'string' ? label : label.name)).filter(Boolean),
+    assignees: (issue.assignees ?? []).map((assignee) => assignee.login).filter(Boolean),
+    bountySignals: {
+      assigned: (issue.assignees ?? []).length > 0,
+      labelSignals: (issue.labels ?? [])
+        .map((label) => (typeof label === 'string' ? label : label.name))
+        .filter((label) => /assigned|selected|winner|paid|completed/i.test(label ?? '')),
+      timelineSignals,
+      commentSignals,
+    },
+    amount: bounty.amount,
+    currency: bounty.currency,
+    rawAmount: bounty.raw,
+    pullRequestCount: pullRequests.length,
+    pullRequestDetection: linkedPullRequestDetection,
+    pullRequestDetectionWarnings: [...linkedPullRequests.warnings, ...competition.warnings],
+    competition: {
+      summary: competition.summary,
+      detailLimit: competitionDetailLimit,
+    },
+    pullRequests: pullRequests.map((pr) => ({
+      number: pr.number,
+      title: pr.title,
+      url: pr.url,
+      state: pr.state,
+      updatedAt: pr.updatedAt,
+      detectionSources: pr.detectionSources,
+      draft: pr.draft,
+      merged: pr.merged,
+      mergedAt: pr.mergedAt,
+      author: pr.author,
+      checks: pr.checks,
+      latestReviewState: pr.latestReviewState,
+      maintainerApproved: pr.maintainerApproved,
+      maintainerChangesRequested: pr.maintainerChangesRequested,
+      strength: pr.strength,
+      changedFiles: pr.changedFiles,
+      warnings: pr.warnings,
+    })),
+  };
+
+  const scored = {...candidate, score: scoreCandidate(candidate)};
+  return {...scored, analysis: analyzeCandidate(scored, {text: issueText})};
+}
+
 export const githubAdapter = {
   name: 'github',
   sourceType: 'github-api',
@@ -17,9 +109,6 @@ export const githubAdapter = {
     const queries = expandRepositoryQueries(repoConfig);
     const maxIssuesPerQuery = repoConfig.maxIssuesPerQuery ?? defaults.maxIssuesPerQuery ?? 25;
     const includeClosed = repoConfig.includeClosed ?? defaults.includeClosed ?? false;
-    const linkedPullRequestDetection = repoConfig.linkedPullRequestDetection ?? defaults.linkedPullRequestDetection ?? 'both';
-    const competitionDetails = repoConfig.competitionDetails ?? defaults.competitionDetails ?? true;
-    const competitionDetailLimit = repoConfig.competitionDetailLimit ?? defaults.competitionDetailLimit ?? 5;
     const seen = new Set();
     const candidates = [];
 
@@ -36,81 +125,28 @@ export const githubAdapter = {
         if (seen.has(key)) continue;
         seen.add(key);
 
-        const issueText = `${issue.title}\n\n${issue.body ?? ''}`;
-        const bounty = findBountyAmount(issueText);
-        if (!bounty) continue;
+        const candidate = await candidateFromIssue({client, issue, fullName, defaults, repoConfig});
+        if (candidate) candidates.push(candidate);
+      }
+    }
 
-        const linkedPullRequests = await findLinkedPullRequests(client, {
-          fullName,
-          issueNumber: issue.number,
-          issueUrl: issue.html_url,
-          strategy: linkedPullRequestDetection,
-        });
-        const timelineSignals = linkedPullRequestDetection === 'search' ? [] : issueTimelineSignals(await client.listIssueTimeline({fullName, number: issue.number}).catch(() => []));
-        const comments = await client.listIssueComments({fullName, number: issue.number, perPage: defaults.commentSignalLimit ?? repoConfig.commentSignalLimit ?? 50}).catch(() => []);
-        const commentSignals = analyzeIssueComments(comments);
-        const competition = competitionDetails
-          ? await analyzePullRequestCompetition(client, {fullName, pullRequests: linkedPullRequests.pullRequests, limit: competitionDetailLimit}).catch((error) => ({
-              pullRequests: linkedPullRequests.pullRequests,
-              summary: null,
-              warnings: [`competition details unavailable: ${error.message.split('\n')[0]}`],
-            }))
-          : {pullRequests: linkedPullRequests.pullRequests, summary: null, warnings: []};
-        const pullRequests = competition.pullRequests;
+    return candidates;
+  },
+  async search({client, searchConfig, defaults = {}}) {
+    const queries = expandRepositoryQueries(searchConfig);
+    const maxIssuesPerQuery = searchConfig.maxIssuesPerQuery ?? defaults.globalMaxIssuesPerQuery ?? defaults.maxIssuesPerQuery ?? 10;
+    const includeClosed = searchConfig.includeClosed ?? defaults.includeClosed ?? false;
+    const seen = new Set();
+    const candidates = [];
 
-        const candidate = {
-          adapter: 'github',
-          platform: 'GitHub',
-          repository: fullName,
-          number: issue.number,
-          title: issue.title,
-          url: issue.html_url,
-          state: issue.state,
-          createdAt: issue.created_at,
-          updatedAt: issue.updated_at,
-          labels: issue.labels.map((label) => (typeof label === 'string' ? label : label.name)).filter(Boolean),
-          assignees: (issue.assignees ?? []).map((assignee) => assignee.login).filter(Boolean),
-          bountySignals: {
-            assigned: (issue.assignees ?? []).length > 0,
-            labelSignals: issue.labels
-              .map((label) => (typeof label === 'string' ? label : label.name))
-              .filter((label) => /assigned|selected|winner|paid|completed/i.test(label ?? '')),
-            timelineSignals,
-            commentSignals,
-          },
-          amount: bounty.amount,
-          currency: bounty.currency,
-          rawAmount: bounty.raw,
-          pullRequestCount: pullRequests.length,
-          pullRequestDetection: linkedPullRequestDetection,
-          pullRequestDetectionWarnings: [...linkedPullRequests.warnings, ...competition.warnings],
-          competition: {
-            summary: competition.summary,
-            detailLimit: competitionDetailLimit,
-          },
-          pullRequests: pullRequests.map((pr) => ({
-            number: pr.number,
-            title: pr.title,
-            url: pr.url,
-            state: pr.state,
-            updatedAt: pr.updatedAt,
-            detectionSources: pr.detectionSources,
-            draft: pr.draft,
-            merged: pr.merged,
-            mergedAt: pr.mergedAt,
-            author: pr.author,
-            checks: pr.checks,
-            latestReviewState: pr.latestReviewState,
-            maintainerApproved: pr.maintainerApproved,
-            maintainerChangesRequested: pr.maintainerChangesRequested,
-            strength: pr.strength,
-            changedFiles: pr.changedFiles,
-            warnings: pr.warnings,
-          })),
-        };
-
-        const scored = {...candidate, score: scoreCandidate(candidate)};
-        candidates.push({...scored, analysis: analyzeCandidate(scored, {text: issueText})});
+    for (const query of queries) {
+      const issues = await client.searchGlobalIssues({query, maxIssues: maxIssuesPerQuery, includeClosed});
+      for (const issue of issues) {
+        const key = issue.html_url ?? `${issue.repository_url}#${issue.number}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const candidate = await candidateFromIssue({client, issue, defaults, repoConfig: searchConfig});
+        if (candidate) candidates.push(candidate);
       }
     }
 

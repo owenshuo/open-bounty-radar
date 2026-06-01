@@ -318,6 +318,18 @@ async function runScan(parsed) {
     }
   }
 
+  for (const searchConfig of config.githubSearches ?? []) {
+    try {
+      const candidates = validateCandidates(await githubAdapter.search({client, searchConfig, defaults: config.defaults ?? {}}), 'github-search');
+      allCandidates.push(...candidates);
+    } catch (error) {
+      const label = searchConfig.name ?? searchConfig.queries?.join(' | ') ?? 'github-search';
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push({repository: label, message});
+      console.warn(`Warning: failed to run GitHub search ${label}: ${message.split('\n')[0]}`);
+    }
+  }
+
   if (config.algora) {
     try {
       const candidates = validateCandidates(algoraAdapter.scanStatic({listings: await loadListingsSource(config.algora)}), 'algora');
@@ -336,7 +348,8 @@ async function runScan(parsed) {
     }
   }
 
-  const assessed = attachReadiness(attachAssessments(allCandidates));
+  const uniqueCandidates = [...new Map(allCandidates.map((candidate) => [`${candidate.repository}#${candidate.number}`, candidate])).values()];
+  const assessed = attachReadiness(attachAssessments(uniqueCandidates));
   const workspacePath = parsed.workspace ?? config.workspacePath ?? null;
   const baseWorkspace = await loadWorkspace(workspacePath);
   const importedWorkspace = parsed.workspaceImport ? JSON.parse(await readFile(parsed.workspaceImport, 'utf8')) : null;

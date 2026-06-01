@@ -8,7 +8,7 @@ The machine-readable JSON Schema is shipped at:
 schema/open-bounty-radar.schema.json
 ```
 
-Editors that support JSON Schema can use it for autocompletion and validation. It covers the top-level radar config, scan configs, watch configs, GitHub repositories, Algora/Opire listing sources, notification targets, workspace paths, and report outputs.
+Editors that support JSON Schema can use it for autocompletion and validation. It covers the top-level radar config, scan configs, watch configs, GitHub repositories, GitHub-wide searches, Algora/Opire listing sources, notification targets, workspace paths, and report outputs.
 
 ## Radar Config
 
@@ -44,16 +44,18 @@ Common optional fields:
 - `githubTokenEnv`: environment variable for a GitHub token.
 - `statePath`: path for change detection snapshots.
 - `defaults.maxIssuesPerQuery`: per-query GitHub search limit.
+- `defaults.globalMaxIssuesPerQuery`: per-query GitHub-wide search limit.
 - `defaults.includeClosed`: include closed issues when true.
 - `defaults.linkedPullRequestDetection`: `search`, `timeline`, or `both`.
 - `defaults.competitionDetails`: enrich linked PRs with review/check strength when true.
 - `defaults.competitionDetailLimit`: maximum linked PRs to enrich per issue.
 - `filters.minAmount`: minimum bounty amount.
 - `filters.excludeKeywords`: keywords to skip.
+- `githubSearches`: optional GitHub-wide issue searches.
 - `algora`: optional Algora listing source.
 - `opire`: optional Opire listing source.
 
-`repositories` may be empty only when an external source such as `algora` or `opire` is configured. This enables offline demos and platform-only scans.
+`repositories` may be empty only when another source such as `githubSearches`, `algora`, or `opire` is configured. This enables broad discovery, offline demos, and platform-only scans.
 
 Repository entries:
 
@@ -63,6 +65,17 @@ Repository entries:
   "repo": "App",
   "queries": ["$ in:title,body label:External"],
   "presets": ["bounty", "external", "recent"]
+}
+```
+
+GitHub-wide search entries:
+
+```json
+{
+  "name": "global-bounty-labels",
+  "queries": ["label:bounty $ in:title,body archived:false"],
+  "presets": ["amounts"],
+  "maxIssuesPerQuery": 5
 }
 ```
 

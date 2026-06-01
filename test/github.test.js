@@ -50,3 +50,24 @@ test('extracts pull requests from issue timeline cross references', async () => 
   assert.equal(pullRequests[0].number, 3);
   assert.match(requestedUrls[0], /\/repos\/owner\/repo\/issues\/1\/timeline/);
 });
+
+test('searches global issues without a repository qualifier', async () => {
+  const requestedUrls = [];
+  const client = new GitHubClient({
+    async fetchImpl(url) {
+      requestedUrls.push(url);
+      return jsonResponse({items: [{number: 1, title: 'Bounty issue'}]});
+    },
+  });
+
+  const issues = await client.searchGlobalIssues({query: 'label:bounty $ in:title,body archived:false', maxIssues: 7});
+  assert.equal(issues.length, 1);
+
+  const url = requestedUrls[0];
+  assert.equal(url.pathname, '/search/issues');
+  assert.equal(url.searchParams.get('per_page'), '7');
+  assert.equal(url.searchParams.get('sort'), 'updated');
+  assert.equal(url.searchParams.get('order'), 'desc');
+  assert.equal(url.searchParams.get('q'), 'is:issue is:open label:bounty $ in:title,body archived:false');
+  assert.equal(url.searchParams.get('q').includes('repo:'), false);
+});

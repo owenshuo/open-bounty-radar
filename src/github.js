@@ -55,6 +55,18 @@ export class GitHubClient {
     return data.items ?? [];
   }
 
+  async searchGlobalIssues({query, maxIssues = 25, includeClosed = false}) {
+    const state = includeClosed ? '' : 'is:open';
+    const q = ['is:issue', state, query].filter(Boolean).join(' ');
+    const data = await this.request('/search/issues', {
+      q,
+      sort: 'updated',
+      order: 'desc',
+      per_page: Math.min(maxIssues, 100),
+    });
+    return data.items ?? [];
+  }
+
   async searchPullRequestsForIssue({fullName, issueNumber, issueUrl}) {
     const queries = [
       `repo:${fullName} is:pr ${issueUrl}`,

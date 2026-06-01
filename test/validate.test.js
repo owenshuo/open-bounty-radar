@@ -91,6 +91,51 @@ test('reports invalid search presets', async () => {
   );
 });
 
+test('reports invalid GitHub-wide search config', async () => {
+  await withConfigFiles(
+    {
+      'scan.json': {
+        repositories: [],
+        githubSearches: [{name: 'global', queries: 'bounty', presets: ['made-up']}],
+      },
+      'radar.json': {
+        scan: {config: null},
+      },
+    },
+    async (dir) => {
+      const radarPath = path.join(dir, 'radar.json');
+      await writeFile(radarPath, JSON.stringify({scan: {config: path.join(dir, 'scan.json')}}), 'utf8');
+
+      const result = await validateRadarConfig(radarPath, {env: {GITHUB_TOKEN: 'token'}});
+      assert.equal(result.valid, false);
+      assert.match(result.errors.join('\n'), /global\.queries must be an array/);
+      assert.match(result.errors.join('\n'), /global has invalid preset/);
+    },
+  );
+});
+
+test('warns when GitHub-wide search has no query source', async () => {
+  await withConfigFiles(
+    {
+      'scan.json': {
+        repositories: [],
+        githubSearches: [{name: 'empty-global'}],
+      },
+      'radar.json': {
+        scan: {config: null},
+      },
+    },
+    async (dir) => {
+      const radarPath = path.join(dir, 'radar.json');
+      await writeFile(radarPath, JSON.stringify({scan: {config: path.join(dir, 'scan.json')}}), 'utf8');
+
+      const result = await validateRadarConfig(radarPath, {env: {GITHUB_TOKEN: 'token'}});
+      assert.equal(result.valid, true);
+      assert.match(result.warnings.join('\n'), /empty-global has no queries or presets/);
+    },
+  );
+});
+
 test('reports Telegram environment errors when notifications are enabled', async () => {
   await withConfigFiles(
     {

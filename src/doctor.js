@@ -121,8 +121,10 @@ async function checkGitHubToken({checks, sections, env, fetchImpl}) {
 function addScanOverviewChecks(checks, sectionConfig) {
   const repositories = sectionConfig.repositories ?? [];
   const queryCount = repositories.reduce((total, repository) => total + expandRepositoryQueries(repository).length, 0);
+  const githubSearches = sectionConfig.githubSearches ?? [];
+  const globalQueryCount = githubSearches.reduce((total, search) => total + expandRepositoryQueries(search).length, 0);
   const timelineRepositories = repositories.filter((repository) => (repository.linkedPullRequestDetection ?? sectionConfig.defaults?.linkedPullRequestDetection ?? 'both') !== 'search').length;
-  addCheck(checks, 'Scan scope', 'ok', `${repositories.length} repos, ${queryCount} expanded query(ies)`);
+  addCheck(checks, 'Scan scope', 'ok', `${repositories.length} repos, ${queryCount} repo query(ies), ${githubSearches.length} global search group(s), ${globalQueryCount} global query(ies)`);
   addCheck(checks, 'Timeline PR detection', timelineRepositories ? 'ok' : 'warning', timelineRepositories ? `${timelineRepositories} repo(s) use timeline or both detection` : 'disabled for all repositories');
   const liveAdapters = ['algora', 'opire'].filter((platform) => sectionConfig[platform]?.liveUrl);
   addCheck(checks, 'Live listing adapters', liveAdapters.length ? 'ok' : 'warning', liveAdapters.length ? `${liveAdapters.join(', ')} live source(s) configured` : 'no live listing source configured');

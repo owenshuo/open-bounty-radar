@@ -87,12 +87,17 @@
           "type": "array",
           "items": {"$ref": "#/$defs/repository"}
         },
+        "githubSearches": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/githubSearch"}
+        },
         "algora": {"$ref": "#/$defs/listingSource"},
         "opire": {"$ref": "#/$defs/listingSource"}
       },
       "required": ["repositories"],
       "anyOf": [
-        {"properties": {"repositories": {"minItems": 1}}},
+        {"required": ["repositories"], "properties": {"repositories": {"minItems": 1}}},
+        {"required": ["githubSearches"], "properties": {"githubSearches": {"minItems": 1}}},
         {"required": ["algora"]},
         {"required": ["opire"]}
       ]
@@ -111,11 +116,26 @@
       },
       "required": ["owner", "repo"]
     },
+    "githubSearch": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "name": {"type": "string"},
+        "queries": {"type": "array", "items": {"type": "string"}},
+        "presets": {"type": "array", "items": {"type": "string"}},
+        "maxIssuesPerQuery": {"type": "integer", "minimum": 1},
+        "includeClosed": {"type": "boolean"},
+        "competitionDetails": {"type": "boolean"},
+        "competitionDetailLimit": {"type": "integer", "minimum": 1},
+        "linkedPullRequestDetection": {"enum": ["search", "timeline", "both"]}
+      }
+    },
     "scanDefaults": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "maxIssuesPerQuery": {"type": "integer", "minimum": 1},
+        "globalMaxIssuesPerQuery": {"type": "integer", "minimum": 1},
         "includeClosed": {"type": "boolean"},
         "competitionDetails": {"type": "boolean"},
         "competitionDetailLimit": {"type": "integer", "minimum": 1},

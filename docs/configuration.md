@@ -85,12 +85,14 @@ Important fields:
 - `notifications.slack.enabled`: send compact digest alerts to a Slack incoming webhook.
 - `notifications.rules`: filter notification changes by severity, action, amount, competition risk, or attention state.
 - `defaults.maxIssuesPerQuery`: GitHub search results to inspect per query.
+- `defaults.globalMaxIssuesPerQuery`: GitHub-wide search results to inspect per query.
 - `defaults.linkedPullRequestDetection`: `search`, `timeline`, or `both`.
 - `defaults.competitionDetails`: enrich linked PRs with reviews, checks, and strength labels.
 - `defaults.competitionDetailLimit`: maximum linked PRs to enrich per issue.
 - `filters.minAmount`: minimum detected bounty amount.
 - `filters.excludeKeywords`: skip noisy matches.
 - `repositories`: GitHub repositories and search queries to scan.
+- `githubSearches`: GitHub-wide issue searches for broader discovery.
 
 Repositories can use explicit `queries`, `presets`, or both:
 
@@ -103,6 +105,19 @@ Repositories can use explicit `queries`, `presets`, or both:
 }
 ```
 
+Use `githubSearches` when a known repository is too crowded or too narrow. These searches run against GitHub's issue search API without a `repo:` qualifier, then dedupe candidates with repository scans:
+
+```json
+{
+  "name": "global-bounty-labels",
+  "queries": [
+    "label:bounty $ in:title,body archived:false",
+    "\"$500\" in:title,body archived:false"
+  ],
+  "maxIssuesPerQuery": 5
+}
+```
+
 Available presets:
 
 - `bounty`
@@ -110,6 +125,8 @@ Available presets:
 - `recent`
 - `low-competition`
 - `crypto-bounty`
+- `reward`
+- `amounts`
 
 ## Platform Adapters
 

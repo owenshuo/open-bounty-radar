@@ -61,3 +61,29 @@ test('loads external-adapter-only scan configs for offline demos', async () => {
     await rm(dir, {recursive: true, force: true});
   }
 });
+
+test('loads GitHub-search-only scan configs for broad discovery', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'open-bounty-radar-'));
+  try {
+    const configPath = path.join(dir, 'scan.json');
+    await writeFile(
+      configPath,
+      JSON.stringify({
+        repositories: [],
+        githubSearches: [
+          {
+            name: 'global-bounty-labels',
+            queries: ['label:bounty $ in:title,body archived:false'],
+          },
+        ],
+      }),
+      'utf8',
+    );
+
+    const config = await loadConfig(configPath);
+    assert.deepEqual(config.repositories, []);
+    assert.equal(config.githubSearches[0].name, 'global-bounty-labels');
+  } finally {
+    await rm(dir, {recursive: true, force: true});
+  }
+});
