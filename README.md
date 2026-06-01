@@ -36,7 +36,7 @@ This project turns that manual research into a repeatable scan and report.
 
 ## Project Status
 
-Open Bounty Radar is an early-stage OSS project with a working `0.1.0` CLI surface, documented configuration, offline demo fixtures, automated tests, CI, and a release checklist. The current goal is to make bounty-related OSS contribution more transparent and less duplicative, not to encourage rushed or spammy pull requests.
+Open Bounty Radar is an early-stage OSS project with a working `0.1.x` CLI surface, documented configuration, offline demo fixtures, automated tests, CI, and a release checklist. The current goal is to make bounty-related OSS contribution more transparent and less duplicative, not to encourage rushed or spammy pull requests.
 
 Suggested repository topics: `open-source`, `bounty`, `github`, `cli`, `developer-tools`, `triage`, `pull-requests`, `oss`.
 
@@ -72,7 +72,7 @@ Suggested repository topics: `open-source`, `bounty`, `github`, `cli`, `develope
 ## Quick Start
 
 ```bash
-git clone https://github.com/<your-user>/open-bounty-radar.git
+git clone https://github.com/owenshuo/open-bounty-radar.git
 cd open-bounty-radar
 npm test
 npm run init
