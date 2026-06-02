@@ -61,6 +61,10 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
   else if (candidate.pullRequestCount >= 4) riskTags.push(risk('crowded', `${candidate.pullRequestCount} linked PR(s)`, 'high'));
   else riskTags.push(risk('some-competition', `${candidate.pullRequestCount} linked PR(s)`, 'low'));
 
+  if (candidate.amount <= 300 && candidate.pullRequestCount >= 6) {
+    riskTags.push(risk('low-return-crowded', `${candidate.currency} ${candidate.amount} with ${candidate.pullRequestCount} linked PR(s)`, 'high'));
+  }
+
   if (candidate.competition?.summary) {
     const summary = candidate.competition.summary;
     if (summary.risk === 'high') riskTags.push(risk('strong-competing-pr', `${summary.strong + summary.winner} strong or merged competing PR(s)`, 'high'));
@@ -86,6 +90,7 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
   let recommendation = 'consider';
   if (candidate.state !== 'open') recommendation = 'skip';
   else if (riskTags.some((item) => item.name === 'fixed-or-closing')) recommendation = 'skip';
+  else if (riskTags.some((item) => item.name === 'low-return-crowded')) recommendation = 'skip';
   else if (riskTags.some((item) => ['crowded', 'strong-competing-pr', 'special-requirements', 'unclear', 'proposal-crowded', 'maintainer-reviewing'].includes(item.name))) recommendation = 'risky';
   else if (candidate.score.total >= 35 && candidate.amount >= 250 && candidate.pullRequestCount <= 1 && candidate.competition?.summary?.risk !== 'high') recommendation = 'strong';
 

@@ -38,6 +38,16 @@ test('marks crowded candidates as risky', () => {
   assert.ok(analysis.riskTags.some((item) => item.name === 'crowded' && item.severity === 'high'));
 });
 
+test('skips low-return crowded candidates', () => {
+  const analysis = analyzeCandidate(candidate({amount: 250, pullRequestCount: 8, score: {total: -15}}), {
+    text: 'Steps to reproduce: open the page. Expected behavior: it works. Actual behavior: it fails.',
+  });
+
+  assert.equal(analysis.recommendation, 'skip');
+  assert.equal(analysis.action, 'skip');
+  assert.ok(analysis.riskTags.some((item) => item.name === 'low-return-crowded' && item.severity === 'high'));
+});
+
 test('marks closed candidates as skip', () => {
   const analysis = analyzeCandidate(candidate({state: 'closed'}), {text: 'Detailed issue body with reproduce steps.'});
   assert.equal(analysis.recommendation, 'skip');

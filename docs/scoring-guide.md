@@ -35,7 +35,7 @@ Each candidate can include a recommendation:
 - `strong`: good amount, open, fresh enough, and low linked PR competition
 - `consider`: potentially useful but not clearly strong
 - `risky`: visible risk such as crowded PR competition, unclear wording, or special access requirements
-- `skip`: currently unsuitable, usually because the issue is not open
+- `skip`: currently unsuitable, usually because the issue is not open, appears fixed, or has low reward with heavy PR competition
 
 Reason tags explain why a candidate looks promising:
 
@@ -51,6 +51,7 @@ Risk tags explain why a candidate may be poor:
 - `low-reward`
 - `stale`
 - `crowded`
+- `low-return-crowded`
 - `some-competition`
 - `not-open`
 - `special-requirements`
@@ -81,7 +82,7 @@ Reports include an action label beside the recommendation:
 - `act-now`: strong candidate with meaningful reward and low competition.
 - `watch`: usable candidate with some competition or a reason to monitor before starting.
 - `manual-review`: risky candidate that may still be worth reading because of high reward or unclear requirements.
-- `skip`: closed, unsuitable, or too risky for normal triage.
+- `skip`: closed, unsuitable, already fixed/closing, or low-return with heavy competition.
 - `consider`: default middle ground when the signal is useful but not urgent.
 
 ## Risk Severity
