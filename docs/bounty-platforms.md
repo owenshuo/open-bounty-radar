@@ -56,10 +56,18 @@ Adapters convert platform-specific bounty listings into the same candidate shape
   "url": "https://github.com/owner/repo/issues/123",
   "amount": 250,
   "currency": "USD",
-  "score": 42,
+  "score": {
+    "total": 42,
+    "amountScore": 20,
+    "freshnessScore": 12,
+    "competitionPenalty": 0,
+    "openScore": 10
+  },
   "analysis": {
-    "verdict": "watch",
-    "reasons": ["low competition", "clear payout"]
+    "recommendation": "consider",
+    "action": "watch",
+    "reasonTags": [],
+    "riskTags": []
   }
 }
 ```
