@@ -78,6 +78,7 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
   else if (commentSignals?.proposalCount === 1) riskTags.push(risk('proposal-present', '1 proposal comment found', 'medium'));
   if (commentSignals?.reviewerActivity) riskTags.push(risk('maintainer-reviewing', 'maintainer or reviewer appears to be reviewing proposals', 'high'));
   if (commentSignals?.fixedOrClosing) riskTags.push(risk('fixed-or-closing', 'comments suggest the issue is fixed, resolved, or closing', 'high'));
+  if (commentSignals?.paymentRisk) riskTags.push(risk('payment-risk', 'comments suggest the bounty platform, claim flow, or payout is unavailable', 'high'));
 
   if (candidate.state !== 'open') riskTags.push(risk('not-open', `issue state is ${candidate.state}`, 'high'));
   if (hasAny(fullText, SPECIAL_REQUIREMENT_KEYWORDS)) riskTags.push(risk('special-requirements', 'may need specific hardware, account, or platform access', 'high'));
@@ -90,6 +91,7 @@ export function analyzeCandidate(candidate, {text = ''} = {}) {
   let recommendation = 'consider';
   if (candidate.state !== 'open') recommendation = 'skip';
   else if (riskTags.some((item) => item.name === 'fixed-or-closing')) recommendation = 'skip';
+  else if (riskTags.some((item) => item.name === 'payment-risk')) recommendation = 'skip';
   else if (riskTags.some((item) => item.name === 'low-return-crowded')) recommendation = 'skip';
   else if (riskTags.some((item) => ['crowded', 'strong-competing-pr', 'special-requirements', 'unclear', 'proposal-crowded', 'maintainer-reviewing'].includes(item.name))) recommendation = 'risky';
   else if (candidate.score.total >= 35 && candidate.amount >= 250 && candidate.pullRequestCount <= 1 && candidate.competition?.summary?.risk !== 'high') recommendation = 'strong';

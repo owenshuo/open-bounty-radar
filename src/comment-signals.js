@@ -34,6 +34,17 @@ const FIXED_PATTERNS = [
   /\bresolved by\b/i,
 ];
 
+const PAYMENT_RISK_PATTERNS = [
+  /\bbounty link (?:doesn'?t work|is broken)\b/i,
+  /\bbounty (?:is )?not claimable\b/i,
+  /\bnot claimable\b/i,
+  /\bwill never get paid\b/i,
+  /\bhas not been paid\b/i,
+  /\bpayment (?:is )?(?:unavailable|disabled|broken)\b/i,
+  /\b(?:boss|bounty)\.dev (?:is )?broken\b/i,
+  /\bdisabled the integration\b/i,
+];
+
 function matchesAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
 }
@@ -50,6 +61,7 @@ export function analyzeIssueComments(comments = []) {
     proposalCount: 0,
     reviewerActivity: false,
     fixedOrClosing: false,
+    paymentRisk: false,
     examples: [],
   };
 
@@ -72,6 +84,10 @@ export function analyzeIssueComments(comments = []) {
     if (!proposalMatched && matchesAny(body, FIXED_PATTERNS)) {
       signals.fixedOrClosing = true;
       matched.push('fixed-or-closing');
+    }
+    if (matchesAny(body, PAYMENT_RISK_PATTERNS)) {
+      signals.paymentRisk = true;
+      matched.push('payment-risk');
     }
     if (matched.length && signals.examples.length < 5) signals.examples.push({...compactExample(comment), matched});
   }

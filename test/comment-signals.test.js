@@ -36,3 +36,15 @@ test('does not treat proposal text about a fix as fixed or closing', () => {
   assert.equal(signals.proposalCount, 1);
   assert.equal(signals.fixedOrClosing, false);
 });
+
+test('detects bounty payment risk comments', () => {
+  const signals = analyzeIssueComments([
+    {
+      body: 'That link appears to be broken. This bounty is not claimable and will never get paid because boss.dev is broken and the integration was disabled.',
+      user: {login: 'maintainer'},
+    },
+  ]);
+
+  assert.equal(signals.paymentRisk, true);
+  assert.equal(signals.examples[0].matched.includes('payment-risk'), true);
+});
