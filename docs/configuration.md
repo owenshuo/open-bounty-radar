@@ -238,6 +238,14 @@ $env:DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
 $env:SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
 ```
 
+When GitHub access needs a local proxy, the CLI honors `HTTPS_PROXY` or `HTTP_PROXY`:
+
+```powershell
+$env:HTTPS_PROXY="http://127.0.0.1:10808"
+$env:HTTP_PROXY="http://127.0.0.1:10808"
+$env:NO_PROXY="localhost,127.0.0.1,::1"
+```
+
 Telegram, Discord, and Slack send compact human-readable digests by default. Generic webhook notifications send JSON with the digest plus the structured change list.
 
 ## Example Profiles

@@ -1,3 +1,5 @@
+import {createFetchWithProxyFromEnv} from './proxy-fetch.js';
+
 const GITHUB_API = 'https://api.github.com';
 
 function splitFullName(fullName) {
@@ -11,7 +13,7 @@ function sleep(ms) {
 }
 
 export class GitHubClient {
-  constructor({token, fetchImpl = fetch} = {}) {
+  constructor({token, fetchImpl = createFetchWithProxyFromEnv()} = {}) {
     this.token = token;
     this.fetchImpl = fetchImpl;
   }
