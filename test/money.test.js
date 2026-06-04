@@ -22,6 +22,17 @@ test('detects explicit currency text', () => {
   assert.equal(result.currency, 'USDC');
 });
 
+test('ignores bounty dates that look like years', () => {
+  assert.equal(findBountyAmount('[radar] SN open bounty 2026-05-30T08:38'), null);
+});
+
+test('continues scanning after a bounty date false positive', () => {
+  const result = findBountyAmount('[radar] SN open bounty 2026-05-30T08:38 /bounty $500');
+  assert.equal(result.amount, 500);
+  assert.equal(result.currency, 'USD');
+  assert.equal(result.raw, '/bounty $500');
+});
+
 test('returns null when no money is present', () => {
   assert.equal(findBountyAmount('help wanted bug report'), null);
 });

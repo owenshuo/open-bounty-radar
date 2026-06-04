@@ -19,20 +19,33 @@ const MONEY_PATTERNS = [
   },
 ];
 
+function globalPattern(pattern) {
+  return new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
+}
+
+function isLikelyDateMatch(text, match, {symbol, suffix, currencyText, numberText}) {
+  if (symbol || suffix || currencyText) return false;
+  if (!/^(?:19|20)\d{2}$/.test(numberText.replaceAll(',', ''))) return false;
+
+  const nextText = text.slice(match.index + match[0].length);
+  return /^\s*[-/]\s*\d{1,2}(?:\s*[-/]\s*\d{1,2})?\b/.test(nextText);
+}
+
 export function findBountyAmount(text) {
   for (const {pattern, read} of MONEY_PATTERNS) {
-    const match = pattern.exec(text);
-    if (!match) continue;
+    for (const match of text.matchAll(globalPattern(pattern))) {
+      const {symbol, numberText, suffix, currencyText} = read(match);
+      if (isLikelyDateMatch(text, match, {symbol, suffix, currencyText, numberText})) continue;
 
-    const {symbol, numberText, suffix, currencyText} = read(match);
-    const amount = Number(numberText.replaceAll(',', '')) * (suffix?.toLowerCase() === 'k' ? 1000 : 1);
-    if (!Number.isFinite(amount)) continue;
+      const amount = Number(numberText.replaceAll(',', '')) * (suffix?.toLowerCase() === 'k' ? 1000 : 1);
+      if (!Number.isFinite(amount)) continue;
 
-    return {
-      amount,
-      currency: currencyText?.toUpperCase() ?? CURRENCY_SYMBOLS.get(symbol) ?? 'USD',
-      raw: match[0].trim(),
-    };
+      return {
+        amount,
+        currency: currencyText?.toUpperCase() ?? CURRENCY_SYMBOLS.get(symbol) ?? 'USD',
+        raw: match[0].trim(),
+      };
+    }
   }
 
   return null;
