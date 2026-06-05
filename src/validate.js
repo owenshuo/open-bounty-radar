@@ -3,7 +3,7 @@ import {loadConfig, loadRadarConfig, loadWatchConfig} from './config.js';
 import {availableNotificationRulePresets} from './notification-rules.js';
 import {availableSearchPresets, invalidRepositoryPresets} from './search-presets.js';
 
-const LINKED_PR_DETECTION = new Set(['search', 'timeline', 'both']);
+const LINKED_PR_DETECTION = new Set(['none', 'search', 'timeline', 'both']);
 
 function outputWarnings(sectionName, section) {
   const warnings = [];

@@ -17,6 +17,27 @@ function fullNameFromIssue(issue, fallbackFullName = null) {
   throw new Error(`Cannot determine repository for issue ${issue.html_url ?? issue.number ?? 'unknown'}`);
 }
 
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(1, limit), items.length);
+  const workers = Array.from({length: workerCount}, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await mapper(items[index], index);
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
+}
+
+function enrichmentConcurrency(repoConfig = {}, defaults = {}) {
+  const value = Number(repoConfig.enrichmentConcurrency ?? defaults.enrichmentConcurrency ?? 1);
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 1;
+}
+
 async function candidateFromIssue({client, issue, fullName, defaults = {}, repoConfig = {}}) {
   const issueFullName = fullNameFromIssue(issue, fullName);
   const linkedPullRequestDetection = repoConfig.linkedPullRequestDetection ?? defaults.linkedPullRequestDetection ?? 'both';
@@ -109,6 +130,7 @@ export const githubAdapter = {
     const queries = expandRepositoryQueries(repoConfig);
     const maxIssuesPerQuery = repoConfig.maxIssuesPerQuery ?? defaults.maxIssuesPerQuery ?? 25;
     const includeClosed = repoConfig.includeClosed ?? defaults.includeClosed ?? false;
+    const concurrency = enrichmentConcurrency(repoConfig, defaults);
     const seen = new Set();
     const candidates = [];
 
@@ -120,14 +142,16 @@ export const githubAdapter = {
         includeClosed,
       });
 
+      const newIssues = [];
       for (const issue of issues) {
         const key = `${fullName}#${issue.number}`;
         if (seen.has(key)) continue;
         seen.add(key);
-
-        const candidate = await candidateFromIssue({client, issue, fullName, defaults, repoConfig});
-        if (candidate) candidates.push(candidate);
+        newIssues.push(issue);
       }
+
+      const queryCandidates = await mapWithConcurrency(newIssues, concurrency, (issue) => candidateFromIssue({client, issue, fullName, defaults, repoConfig}));
+      candidates.push(...queryCandidates.filter(Boolean));
     }
 
     return candidates;
@@ -136,18 +160,22 @@ export const githubAdapter = {
     const queries = expandRepositoryQueries(searchConfig);
     const maxIssuesPerQuery = searchConfig.maxIssuesPerQuery ?? defaults.globalMaxIssuesPerQuery ?? defaults.maxIssuesPerQuery ?? 10;
     const includeClosed = searchConfig.includeClosed ?? defaults.includeClosed ?? false;
+    const concurrency = enrichmentConcurrency(searchConfig, defaults);
     const seen = new Set();
     const candidates = [];
 
     for (const query of queries) {
       const issues = await client.searchGlobalIssues({query, maxIssues: maxIssuesPerQuery, includeClosed});
+      const newIssues = [];
       for (const issue of issues) {
         const key = issue.html_url ?? `${issue.repository_url}#${issue.number}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        const candidate = await candidateFromIssue({client, issue, defaults, repoConfig: searchConfig});
-        if (candidate) candidates.push(candidate);
+        newIssues.push(issue);
       }
+
+      const queryCandidates = await mapWithConcurrency(newIssues, concurrency, (issue) => candidateFromIssue({client, issue, defaults, repoConfig: searchConfig}));
+      candidates.push(...queryCandidates.filter(Boolean));
     }
 
     return candidates;

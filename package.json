@@ -57,5 +57,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "undici": "^8.3.0"
   }
 }

@@ -25,10 +25,11 @@
     "maxIssuesPerQuery": 5,
     "globalMaxIssuesPerQuery": 3,
     "includeClosed": false,
-    "linkedPullRequestDetection": "both",
-    "competitionDetails": true,
+    "linkedPullRequestDetection": "none",
+    "competitionDetails": false,
     "competitionDetailLimit": 8,
-    "commentSignalLimit": 50
+    "commentSignalLimit": 50,
+    "enrichmentConcurrency": 3
   },
   "filters": {
     "minAmount": 100,

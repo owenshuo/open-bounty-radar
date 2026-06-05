@@ -246,6 +246,17 @@ $env:HTTP_PROXY="http://127.0.0.1:10808"
 $env:NO_PROXY="localhost,127.0.0.1,::1"
 ```
 
+Proxy requests time out after 20 seconds by default. Override this when your network is slow:
+
+```powershell
+$env:OPEN_BOUNTY_RADAR_REQUEST_TIMEOUT_MS="30000"
+```
+
+If Node reports `unable to get local issuer certificate` behind a corporate or local TLS-inspecting proxy, prefer adding the proxy CA with `NODE_EXTRA_CA_CERTS` instead of disabling TLS verification.
+
+For broad discovery scans, use `linkedPullRequestDetection: "none"` to collect candidates quickly from issue search and comment signals first. Use `inspect` on a promising issue when you need deeper linked PR and timeline analysis.
+`enrichmentConcurrency` can be raised above `1` for broad scans when the network is stable; keep it modest when using a local proxy.
+
 Telegram, Discord, and Slack send compact human-readable digests by default. Generic webhook notifications send JSON with the digest plus the structured change list.
 
 ## Example Profiles

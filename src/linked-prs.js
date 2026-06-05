@@ -47,6 +47,10 @@ function shouldUseSource(strategy, source) {
 export async function findLinkedPullRequests(client, {fullName, issueNumber, issueUrl, strategy = 'both'}) {
   const tasks = [];
 
+  if (strategy === 'none') {
+    return {pullRequests: [], warnings: ['linked pull request detection disabled']};
+  }
+
   if (shouldUseSource(strategy, 'search')) {
     tasks.push(
       client

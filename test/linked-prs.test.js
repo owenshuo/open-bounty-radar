@@ -51,6 +51,28 @@ test('finds linked pull requests from all available sources', async () => {
   assert.deepEqual(result.warnings, []);
 });
 
+test('can disable linked pull request detection for broad discovery', async () => {
+  const result = await findLinkedPullRequests(
+    {
+      async searchPullRequestsForIssue() {
+        throw new Error('search should not run');
+      },
+      async listTimelinePullRequestsForIssue() {
+        throw new Error('timeline should not run');
+      },
+    },
+    {
+      fullName: 'o/r',
+      issueNumber: 10,
+      issueUrl: 'https://github.com/o/r/issues/10',
+      strategy: 'none',
+    },
+  );
+
+  assert.deepEqual(result.pullRequests, []);
+  assert.match(result.warnings[0], /disabled/);
+});
+
 test('keeps successful results when one detection source fails', async () => {
   const client = {
     async searchPullRequestsForIssue() {
