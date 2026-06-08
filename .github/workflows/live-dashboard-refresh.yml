@@ -2,7 +2,7 @@ name: Live Dashboard Refresh
 
 on:
   schedule:
-    - cron: "7,37 * * * *"
+    - cron: "17,47 * * * *"
   workflow_dispatch:
 
 permissions:
