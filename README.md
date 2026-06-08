@@ -4,7 +4,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-315f9f)](LICENSE)
 [![CI](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml)
 [![Release gate](https://img.shields.io/badge/release%20gate-release%3Acheck-315f9f)](docs/release.md)
-[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-116149)](https://owenshuo.github.io/open-bounty-radar/)
+[![Live Dashboard](https://img.shields.io/badge/live-dashboard-116149)](https://owenshuo.github.io/open-bounty-radar/live/discovery-dashboard.html)
+[![Offline Demo](https://img.shields.io/badge/offline-demo-315f9f)](https://owenshuo.github.io/open-bounty-radar/demo/demo-dashboard.html)
+
+**Open the hosted dashboards:** [Live Dashboard](https://owenshuo.github.io/open-bounty-radar/live/discovery-dashboard.html) · [Offline Demo](https://owenshuo.github.io/open-bounty-radar/demo/demo-dashboard.html)
 
 Open Bounty Radar is a small CLI for discovering and monitoring paid open-source issues, bounty-style GitHub issues, and competitive pull request opportunities.
 
