@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+npm run demo:offline
+mkdir -p public/demo
+cp -R reports/. public/demo/
+cat > public/demo/index.html <<'HTML'
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="0; url=./demo-dashboard.html">
+    <title>Open Bounty Radar Offline Demo</title>
+  </head>
+  <body>
+    <p><a href="./demo-dashboard.html">Open the offline demo dashboard</a></p>
+  </body>
+</html>
+HTML
+rm -rf reports
+
+npm run scan:discovery
+mkdir -p public/live
+cp -R reports/. public/live/
+
+cat > public/index.html <<'HTML'
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Open Bounty Radar Live Dashboard</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #10201b;
+        --muted: #5c6b65;
+        --line: #dce7e2;
+        --green: #116149;
+        --blue: #315f9f;
+        --bg: #f8fbf9;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        display: grid;
+        place-items: center;
+        padding: 32px;
+      }
+      main {
+        width: min(760px, 100%);
+        display: grid;
+        gap: 22px;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 4.5rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        max-width: 58ch;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 6px;
+      }
+      a {
+        color: inherit;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        text-decoration: none;
+        font-weight: 700;
+        background: white;
+      }
+      .primary {
+        background: var(--green);
+        border-color: var(--green);
+        color: white;
+      }
+      .secondary {
+        color: var(--blue);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Open Bounty Radar</h1>
+      <p>Browse the scheduled live discovery dashboard or open the deterministic offline demo used for screenshots and release checks.</p>
+      <div class="actions">
+        <a class="button primary" href="./live/discovery-dashboard.html">Live Dashboard</a>
+        <a class="button secondary" href="./demo/demo-dashboard.html">Offline Demo</a>
+        <a class="button" href="https://github.com/owenshuo/open-bounty-radar">GitHub Repository</a>
+      </div>
+    </main>
+  </body>
+</html>
+HTML

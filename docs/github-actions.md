@@ -6,7 +6,7 @@ It also ships `.github/workflows/pages.yml`, which publishes a hosted dashboard 
 - `/live/discovery-dashboard.html`: live discovery output refreshed by GitHub Actions.
 - `/demo/demo-dashboard.html`: deterministic offline fixture output for demos and screenshots.
 
-The Pages dashboard workflow runs on pushes, manual dispatch, and a 30-minute staggered schedule at minute 13 and 43 each hour. GitHub Actions supports scheduled workflows at a minimum interval of five minutes, but scheduled runs can be delayed during high load, so the default avoids exact hour and half-hour boundaries.
+The Pages dashboard workflow runs on pushes and manual dispatch. A dedicated Live Dashboard Refresh workflow runs on manual dispatch and a 30-minute staggered schedule at minute 7 and 37 each hour. GitHub Actions supports scheduled workflows at a minimum interval of five minutes, but scheduled runs can be delayed during high load, so the default avoids exact hour and half-hour boundaries.
 
 ## Setup
 
