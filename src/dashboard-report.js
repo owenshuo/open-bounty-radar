@@ -36,6 +36,10 @@ function assessmentText(candidate) {
   return `${candidate.assessment.verdict} · ${candidate.assessment.confidence}%`;
 }
 
+function generatedAtText(value) {
+  return value ? String(value) : 'unknown';
+}
+
 function readinessText(candidate) {
   return candidate.readiness?.status ?? 'unknown';
 }
@@ -252,7 +256,10 @@ export function renderDashboardHtmlReport(report) {
     .topbar-inner { max-width: 1280px; margin: 0 auto; padding: 14px 18px; display: flex; justify-content: space-between; gap: 18px; align-items: center; }
     .brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
     .brand-mark { width: 42px; height: 42px; border-radius: 8px; background: #1d4ed8; color: #d1fae5; display: grid; place-items: center; font-weight: 900; box-shadow: 0 10px 28px rgba(29, 78, 216, 0.35); }
-    .generated { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .generated { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .generated-label { color: #cbd5e1; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+    .generated-time { color: #f8fafc; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .generated-raw { color: #64748b; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
     .live-pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(16, 185, 129, 0.28); background: rgba(16, 185, 129, 0.1); color: #34d399; border-radius: 999px; padding: 7px 11px; font-size: 12px; white-space: nowrap; }
     .live-dot { width: 7px; height: 7px; border-radius: 99px; background: #34d399; box-shadow: 0 0 14px #34d399; }
     .muted { color: var(--muted); font-size: 13px; }
@@ -319,7 +326,11 @@ export function renderDashboardHtmlReport(report) {
         <div class="brand-mark">OBR</div>
         <div>
           <h1>Open Bounty Radar</h1>
-          <div class="generated">Generated: ${escapeHtml(report.generatedAt)}</div>
+          <div class="generated">
+            <span class="generated-label">Data updated</span>
+            <time class="generated-time" id="generated-at-local" datetime="${escapeHtml(generatedAtText(report.generatedAt))}">${escapeHtml(generatedAtText(report.generatedAt))}</time>
+            <span class="generated-raw" title="Raw scan timestamp">${escapeHtml(generatedAtText(report.generatedAt))}</span>
+          </div>
         </div>
       </div>
       <div class="live-pill"><span class="live-dot"></span><span>${escapeHtml(report.repositories?.length ?? 0)} repos · ${escapeHtml(report.candidates.length)} candidates</span></div>
@@ -389,6 +400,21 @@ export function renderDashboardHtmlReport(report) {
     <footer>Open Bounty Radar · static dashboard generated from the latest scan</footer>
   </main>
   <script>
+    const generatedAt = document.getElementById('generated-at-local');
+    if (generatedAt && generatedAt.dateTime && generatedAt.dateTime !== 'unknown') {
+      const generatedDate = new Date(generatedAt.dateTime);
+      if (!Number.isNaN(generatedDate.getTime())) {
+        generatedAt.textContent = generatedDate.toLocaleString(undefined, {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: 'short',
+        });
+      }
+    }
     const state = { action: 'all', risk: null, competition: null, readiness: null, status: null, query: '' };
     const cards = [...document.querySelectorAll('.candidate')];
     const buttons = [...document.querySelectorAll('.filter-button')];

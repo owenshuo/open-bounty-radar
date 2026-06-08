@@ -26,6 +26,9 @@ test('renders dashboard grouped by action', () => {
   });
 
   assert.match(html, /Open Bounty Radar Dashboard/);
+  assert.match(html, /Data updated/);
+  assert.match(html, /generated-at-local/);
+  assert.match(html, /2026-01-01T00:00:00Z/);
   assert.match(html, /Act now/);
   assert.match(html, /Action Groups/);
   assert.match(html, /Dashboard filters/);
