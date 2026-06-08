@@ -112,9 +112,12 @@ Local config files are ignored by git so you can customize them safely.
 
 See [Demo Output](docs/demo-output.md) for a compact example of the generated reports.
 
-Want to try the UI without a GitHub token or live API calls?
+Want to try the hosted dashboards?
 
-[Open the hosted demo dashboard](https://owenshuo.github.io/open-bounty-radar/) or run it locally:
+- [Open the live discovery dashboard](https://owenshuo.github.io/open-bounty-radar/)
+- [Open the offline demo dashboard](https://owenshuo.github.io/open-bounty-radar/demo/demo-dashboard.html)
+
+The live dashboard is refreshed by GitHub Actions on a schedule. To run the offline fixture locally:
 
 ```bash
 npm run demo:offline

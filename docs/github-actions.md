@@ -1,6 +1,12 @@
 # GitHub Actions Template
 
 The repository includes `.github/workflows/radar.yml.example` as a copy-ready scheduled workflow.
+It also ships `.github/workflows/pages.yml`, which publishes a hosted dashboard site with:
+
+- `/live/discovery-dashboard.html`: live discovery output refreshed by GitHub Actions.
+- `/demo/demo-dashboard.html`: deterministic offline fixture output for demos and screenshots.
+
+The Pages dashboard workflow runs on pushes, manual dispatch, and a 30-minute schedule. GitHub Actions supports scheduled workflows at a minimum interval of five minutes, but scheduled runs can be delayed during high load, so the default stays conservative.
 
 ## Setup
 
@@ -28,5 +34,6 @@ It uploads the generated `reports/` directory as a workflow artifact.
 ## Notes
 
 - Use a dedicated fine-grained token if possible.
+- For the hosted live dashboard, add `OPEN_BOUNTY_RADAR_GITHUB_TOKEN` as a repository secret when you want a dedicated read-only token. The workflow falls back to the built-in `GITHUB_TOKEN`.
 - Keep local generated reports out of source control unless they are intentional examples.
 - Keep notification secrets in GitHub Actions secrets, not JSON config files.

@@ -1,8 +1,10 @@
-name: Pages Demo
+name: Pages Dashboard
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -11,12 +13,14 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-dashboard
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.OPEN_BOUNTY_RADAR_GITHUB_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,22 +28,45 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm install
-      - run: npm run demo:offline
-      - name: Prepare static demo
+      - name: Build offline demo
         run: |
-          mkdir -p public
-          cp -R reports/. public/
-          cat > public/index.html <<'HTML'
+          npm run demo:offline
+          mkdir -p public/demo
+          cp -R reports/. public/demo/
+          cat > public/demo/index.html <<'HTML'
           <!doctype html>
           <html lang="en">
             <head>
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1">
               <meta http-equiv="refresh" content="0; url=./demo-dashboard.html">
-              <title>Open Bounty Radar Demo</title>
+              <title>Open Bounty Radar Offline Demo</title>
             </head>
             <body>
-              <p><a href="./demo-dashboard.html">Open the Open Bounty Radar demo dashboard</a></p>
+              <p><a href="./demo-dashboard.html">Open the offline demo dashboard</a></p>
+            </body>
+          </html>
+          HTML
+          rm -rf reports
+      - name: Build live dashboard
+        run: |
+          npm run scan:discovery
+          mkdir -p public/live
+          cp -R reports/. public/live/
+      - name: Prepare Pages index
+        run: |
+          cat > public/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta http-equiv="refresh" content="0; url=./live/discovery-dashboard.html">
+              <title>Open Bounty Radar Live Dashboard</title>
+            </head>
+            <body>
+              <p><a href="./live/discovery-dashboard.html">Open the live Open Bounty Radar dashboard</a></p>
+              <p><a href="./demo/demo-dashboard.html">Open the offline demo dashboard</a></p>
             </body>
           </html>
           HTML
