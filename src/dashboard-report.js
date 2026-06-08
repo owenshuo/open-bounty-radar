@@ -40,29 +40,42 @@ function readinessText(candidate) {
   return candidate.readiness?.status ?? 'unknown';
 }
 
+function statusOptions(candidate) {
+  return ['new', 'reading', 'doing', 'submitted', 'watching', 'skipped'].map((status) => `<option value="${status}"${(candidate.workspace?.status ?? 'new') === status ? ' selected' : ''}>${status}</option>`).join('');
+}
+
 function candidateCard(candidate) {
   const detailHref = candidate.detailPath ?? `details/${candidateDetailFileName(candidate)}`;
+  const action = candidate.analysis?.action ?? 'consider';
+  const readiness = readinessText(candidate);
+  const riskText = riskNames(candidate);
   return `
-    <article class="candidate" id="candidate-${escapeHtml(candidate.repository.replaceAll('/', '-'))}-${escapeHtml(candidate.number)}" data-action="${escapeHtml(candidate.analysis?.action ?? 'consider')}" data-status="${escapeHtml(candidate.workspace?.status ?? 'new')}" data-readiness="${escapeHtml(readinessText(candidate))}" data-competition="${escapeHtml(candidate.competition?.summary?.risk ?? 'unknown')}" data-risk="${escapeHtml(riskNames(candidate))}" data-repo="${escapeHtml(candidate.repository)}" data-title="${escapeHtml(candidate.title.toLowerCase())}">
+    <article class="candidate candidate-card" id="candidate-${escapeHtml(candidate.repository.replaceAll('/', '-'))}-${escapeHtml(candidate.number)}" data-action="${escapeHtml(action)}" data-status="${escapeHtml(candidate.workspace?.status ?? 'new')}" data-readiness="${escapeHtml(readiness)}" data-competition="${escapeHtml(candidate.competition?.summary?.risk ?? 'unknown')}" data-risk="${escapeHtml(riskText)}" data-repo="${escapeHtml(candidate.repository)}" data-title="${escapeHtml(candidate.title.toLowerCase())}">
       <div class="candidate-main">
         <div class="candidate-kicker">
-          <a class="issue-link" href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a>
-          <span>${escapeHtml(candidate.platform ?? candidate.adapter ?? 'GitHub')}</span>
+          <span class="issue-chip"><a class="issue-link" href="${escapeHtml(candidate.url)}">${escapeHtml(candidate.repository)}#${escapeHtml(candidate.number)}</a></span>
+          <span class="meta-chip">${escapeHtml(candidate.platform ?? candidate.adapter ?? 'GitHub')}</span>
+          <span class="meta-chip">${escapeHtml(money(candidate))}</span>
+          <span class="meta-chip">score ${escapeHtml(candidate.score.total)}</span>
         </div>
         <h3>${escapeHtml(candidate.title)}</h3>
-        <p>${escapeHtml(money(candidate))} · score ${escapeHtml(candidate.score.total)} · ${escapeHtml(competitionSummaryText(candidate))} · ${escapeHtml(assessmentText(candidate))}</p>
-        <textarea class="bench-note" data-workspace-key="${escapeHtml(`${candidate.repository}#${candidate.number}`)}" placeholder="Add local note">${escapeHtml(candidate.workspace?.note ?? '')}</textarea>
+        <p>${escapeHtml(competitionSummaryText(candidate))} · ${escapeHtml(assessmentText(candidate))}</p>
+        <textarea class="bench-note" data-workspace-key="${escapeHtml(`${candidate.repository}#${candidate.number}`)}" placeholder="Add local analysis note">${escapeHtml(candidate.workspace?.note ?? '')}</textarea>
       </div>
       <div class="candidate-tags">
-        <select class="status-select" data-workspace-key="${escapeHtml(`${candidate.repository}#${candidate.number}`)}" aria-label="Candidate status">
-          ${['new', 'reading', 'doing', 'submitted', 'watching', 'skipped'].map((status) => `<option value="${status}"${(candidate.workspace?.status ?? 'new') === status ? ' selected' : ''}>${status}</option>`).join('')}
-        </select>
-        <span class="tag action-${escapeHtml(candidate.analysis?.action ?? 'consider')}">${escapeHtml(candidate.analysis?.action ?? 'consider')}</span>
-        <span class="tag readiness-${escapeHtml(readinessText(candidate))}">${escapeHtml(readinessText(candidate))}</span>
+        <div class="tag-row align-end">
+          <select class="status-select" data-workspace-key="${escapeHtml(`${candidate.repository}#${candidate.number}`)}" aria-label="Candidate status">
+            ${statusOptions(candidate)}
+          </select>
+          <span class="tag action-${escapeHtml(action)}">${escapeHtml(action)}</span>
+          <span class="tag readiness-${escapeHtml(readiness)}">${escapeHtml(readiness)}</span>
+        </div>
+        <div class="tag-row align-end">
         <span class="tag">${escapeHtml(candidate.analysis?.recommendation ?? 'unknown')}</span>
-        <a class="copy" href="${escapeHtml(detailHref)}">Details</a>
-        <button class="copy" type="button" data-copy="${escapeHtml(candidate.url)}">Copy URL</button>
-        <span class="muted">${escapeHtml(riskNames(candidate))}</span>
+          <a class="copy detail-link" href="${escapeHtml(detailHref)}">Details</a>
+          <button class="copy" type="button" data-copy="${escapeHtml(candidate.url)}">Copy URL</button>
+        </div>
+        <span class="risk-line">${escapeHtml(riskText)}</span>
       </div>
     </article>`;
 }
@@ -225,57 +238,94 @@ export function renderDashboardHtmlReport(report) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Open Bounty Radar Dashboard</title>
   <style>
-    :root { --bg: #f4f7fb; --panel: #fff; --text: #18202f; --muted: #667085; --border: #d7deea; --accent: #116149; --accent-soft: #e7f4ef; --high: #a83232; --medium: #8a5a00; --low: #315f9f; --shadow: 0 10px 30px rgba(24, 32, 47, 0.07); }
+    :root { color-scheme: dark; --bg: #070d19; --panel: #101827; --panel-soft: #0c1423; --text: #f8fafc; --muted: #94a3b8; --border: #263345; --border-strong: #3b4a61; --accent: #10b981; --blue: #60a5fa; --rose: #fb7185; --amber: #fbbf24; --danger: #f87171; --shadow: 0 18px 44px rgba(0, 0, 0, 0.28); }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    main { max-width: 1200px; margin: 0 auto; padding: 32px 20px 48px; }
-    header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 24px; padding: 18px 0; border-bottom: 1px solid var(--border); }
-    h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: 0; }
-    h2 { margin: 28px 0 12px; font-size: 20px; }
-    h3 { margin: 6px 0; font-size: 16px; }
-    a { color: var(--accent); text-decoration: none; }
+    a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    h1, h2, h3 { letter-spacing: 0; }
+    h1 { margin: 0; font-size: 22px; line-height: 1.1; }
+    h2 { margin: 0 0 14px; font-size: 18px; }
+    h3 { margin: 8px 0; font-size: 16px; line-height: 1.35; }
+    main { max-width: 1280px; margin: 0 auto; padding: 24px 18px 56px; }
+    .topbar { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border); background: rgba(7, 13, 25, 0.88); backdrop-filter: blur(14px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24); }
+    .topbar-inner { max-width: 1280px; margin: 0 auto; padding: 14px 18px; display: flex; justify-content: space-between; gap: 18px; align-items: center; }
+    .brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+    .brand-mark { width: 42px; height: 42px; border-radius: 8px; background: #1d4ed8; color: #d1fae5; display: grid; place-items: center; font-weight: 900; box-shadow: 0 10px 28px rgba(29, 78, 216, 0.35); }
+    .generated { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .live-pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(16, 185, 129, 0.28); background: rgba(16, 185, 129, 0.1); color: #34d399; border-radius: 999px; padding: 7px 11px; font-size: 12px; white-space: nowrap; }
+    .live-dot { width: 7px; height: 7px; border-radius: 99px; background: #34d399; box-shadow: 0 0 14px #34d399; }
     .muted { color: var(--muted); font-size: 13px; }
-    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0 24px; }
-    .metric, .candidate, .group { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); }
-    .metric { padding: 14px; position: relative; overflow: hidden; }
-    .metric::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--accent); opacity: 0.82; }
-    .metric span { display: block; color: var(--muted); font-size: 13px; }
-    .metric strong { display: block; font-size: 24px; margin-top: 4px; }
-    .candidate { display: grid; grid-template-columns: minmax(0, 1fr) 280px; justify-content: space-between; gap: 18px; padding: 16px; margin-bottom: 12px; transition: border-color 0.15s ease, transform 0.15s ease; }
-    .candidate:hover { border-color: #a9b8ca; transform: translateY(-1px); }
-    .candidate-kicker { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-    .candidate-main p { margin: 0; color: var(--muted); font-size: 13px; }
-    .candidate-tags { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; justify-content: flex-end; min-width: 220px; }
-    .tag { display: inline-block; border-radius: 999px; padding: 3px 9px; font-size: 12px; border: 1px solid var(--border); background: #f4f6fa; white-space: nowrap; }
-    .copy, .filter-button { border: 1px solid var(--border); background: #fff; color: var(--text); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
-    .status-select { border: 1px solid var(--border); background: #fff; border-radius: 6px; padding: 4px 8px; }
-    .bench-note { width: 100%; min-height: 38px; border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; margin-top: 10px; resize: vertical; font: inherit; color: var(--text); }
-    .copy:hover, .filter-button:hover, .filter-button.active { border-color: var(--accent); color: var(--accent); }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; align-items: center; }
-    .controls input { min-width: 220px; border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; }
-    .hidden { display: none; }
-    .action-act-now { color: var(--low); border-color: #b8c9e6; background: #f1f6ff; }
-    .action-watch, .action-manual-review { color: var(--medium); border-color: #e7d2a5; background: #fff8e9; }
-    .action-skip { color: var(--high); border-color: #e7b6b6; background: #fff1f1; }
-    .readiness-ready { color: var(--accent); border-color: #b7d8ca; background: var(--accent-soft); }
-    .readiness-needs-review { color: var(--medium); border-color: #e7d2a5; background: #fff8e9; }
-    .readiness-blocked { color: var(--high); border-color: #e7b6b6; background: #fff1f1; }
-    .group { padding: 14px; margin-bottom: 16px; }
-    .group h2 { margin-top: 0; }
-    @media (max-width: 720px) { header, .candidate { display: block; } .candidate-tags { justify-content: flex-start; margin-top: 10px; min-width: 0; } }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; margin: 0 0 22px; }
+    .metric, .candidate, .group, .trend-panel, .controls { background: rgba(16, 24, 39, 0.82); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); }
+    .metric { padding: 14px; position: relative; overflow: hidden; min-height: 78px; }
+    .metric::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--accent); }
+    .metric:nth-child(1)::before { background: var(--rose); }
+    .metric:nth-child(2)::before { background: var(--amber); }
+    .metric:nth-child(3)::before { background: var(--blue); }
+    .metric:nth-child(4)::before { background: var(--danger); }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; font-size: 25px; margin-top: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .trend-panel { padding: 16px; margin-bottom: 22px; }
+    .trend-panel svg { width: 100%; max-height: 135px; background: rgba(7, 13, 25, 0.45); border: 1px solid rgba(38, 51, 69, 0.75); border-radius: 8px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; padding: 14px; align-items: center; }
+    .controls input { flex: 1 1 260px; min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: #070d19; color: var(--text); outline: none; }
+    .controls input:focus, .bench-note:focus, .status-select:focus { border-color: var(--blue); }
+    .control-divider { width: 1px; align-self: stretch; background: var(--border); margin: 0 2px; }
+    .filter-button, .copy { border: 1px solid var(--border); background: #121c2d; color: #dbeafe; border-radius: 8px; padding: 8px 11px; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .filter-button:hover, .copy:hover { border-color: var(--border-strong); background: #17243a; text-decoration: none; }
+    .filter-button.active { border-color: var(--blue); background: #1d4ed8; color: #fff; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.16); }
+    .workspace-button { border-color: rgba(16, 185, 129, 0.32); color: #a7f3d0; }
+    .hidden { display: none !important; }
+    .section-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin: 24px 0 12px; }
+    .section-heading h2 { margin: 0; }
+    .candidate { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); gap: 18px; padding: 18px; margin-bottom: 12px; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+    .candidate:hover { border-color: var(--border-strong); transform: translateY(-1px); box-shadow: 0 0 22px rgba(96, 165, 250, 0.08), var(--shadow); }
+    .candidate-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+    .issue-chip, .meta-chip { display: inline-flex; align-items: center; min-height: 24px; border: 1px solid var(--border); background: #070d19; border-radius: 7px; padding: 3px 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .meta-chip { color: var(--muted); }
+    .candidate-main p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .candidate-tags { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; min-width: 0; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .align-end { justify-content: flex-end; }
+    .tag { display: inline-block; border-radius: 999px; padding: 4px 9px; font-size: 12px; border: 1px solid var(--border); background: #070d19; color: #cbd5e1; white-space: nowrap; }
+    .action-act-now { color: #fecdd3; border-color: rgba(251, 113, 133, 0.35); background: rgba(251, 113, 133, 0.12); }
+    .action-watch, .action-manual-review { color: #fde68a; border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.12); }
+    .action-skip { color: #fecaca; border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.12); }
+    .readiness-ready { color: #a7f3d0; border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.12); }
+    .readiness-needs-review { color: #fde68a; border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.12); }
+    .readiness-blocked { color: #fecaca; border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.12); }
+    .status-select { border: 1px solid var(--border); background: #070d19; color: #cbd5e1; border-radius: 8px; padding: 6px 8px; }
+    .bench-note { width: 100%; min-height: 46px; border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; margin-top: 12px; resize: vertical; font: inherit; font-size: 13px; color: var(--text); background: #070d19; outline: none; }
+    .risk-line { display: block; max-width: 100%; color: #64748b; font-size: 11px; line-height: 1.45; text-align: right; overflow-wrap: anywhere; }
+    .detail-link { text-align: center; }
+    .group { padding: 16px; margin-bottom: 16px; }
+    .group h2 { margin: 0 0 12px; color: #dbeafe; font-size: 15px; text-transform: uppercase; }
+    footer { color: #64748b; text-align: center; font-size: 12px; padding: 12px 0 0; }
+    @media (max-width: 780px) {
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+      .live-pill { white-space: normal; }
+      .candidate { grid-template-columns: 1fr; }
+      .candidate-tags, .align-end { align-items: flex-start; justify-content: flex-start; }
+      .risk-line { text-align: left; }
+      .control-divider { display: none; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <div>
-        <h1>Open Bounty Radar Dashboard</h1>
-        <div class="muted">Generated: ${escapeHtml(report.generatedAt)}</div>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">OBR</div>
+        <div>
+          <h1>Open Bounty Radar</h1>
+          <div class="generated">Generated: ${escapeHtml(report.generatedAt)}</div>
+        </div>
       </div>
-      <div class="muted">${escapeHtml(report.repositories?.length ?? 0)} repos · ${escapeHtml(report.candidates.length)} candidates</div>
-    </header>
-
+      <div class="live-pill"><span class="live-dot"></span><span>${escapeHtml(report.repositories?.length ?? 0)} repos · ${escapeHtml(report.candidates.length)} candidates</span></div>
+    </div>
+  </header>
+  <main>
     <section class="metrics">
       ${metric('Act now', actionSummary['act-now'])}
       ${metric('Watch', actionSummary.watch)}
@@ -287,7 +337,7 @@ export function renderDashboardHtmlReport(report) {
       ${metric('Act-now delta', trend.actNowDelta)}
     </section>
 
-    <section>
+    <section class="trend-panel">
       <h2>History Trend</h2>
       ${renderHistoryTrendSvg(historyEntries)}
     </section>
@@ -303,18 +353,25 @@ export function renderDashboardHtmlReport(report) {
       <button class="filter-button" type="button" data-filter-competition="high">Strong competition</button>
       <button class="filter-button" type="button" data-filter-readiness="ready">Ready</button>
       <button class="filter-button" type="button" data-filter-status="doing">Doing</button>
-      <button class="filter-button" type="button" id="export-workspace">Export Workspace</button>
-      <button class="filter-button" type="button" id="import-workspace">Import Workspace</button>
+      <span class="control-divider"></span>
+      <button class="filter-button workspace-button" type="button" id="export-workspace">Export Workspace</button>
+      <button class="filter-button workspace-button" type="button" id="import-workspace">Import Workspace</button>
       <input class="hidden" id="import-workspace-file" type="file" accept="application/json">
     </section>
 
     <section>
-      <h2>Top 10</h2>
+      <div class="section-heading">
+        <h2>Top Candidates Feed</h2>
+        <span class="muted">${escapeHtml(top.length)} highlighted</span>
+      </div>
       ${top.length ? top.map(candidateCard).join('') : '<p class="muted">No recommended candidates.</p>'}
     </section>
 
     <section>
-      <h2>Action Groups</h2>
+      <div class="section-heading">
+        <h2>Action Groups</h2>
+        <span class="muted">${escapeHtml(groups.length)} groups</span>
+      </div>
       ${
         groups.length
           ? groups
@@ -329,6 +386,7 @@ export function renderDashboardHtmlReport(report) {
           : '<p class="muted">No candidates matched the current filters.</p>'
       }
     </section>
+    <footer>Open Bounty Radar · static dashboard generated from the latest scan</footer>
   </main>
   <script>
     const state = { action: 'all', risk: null, competition: null, readiness: null, status: null, query: '' };
@@ -391,9 +449,11 @@ export function renderDashboardHtmlReport(report) {
     });
     for (const button of document.querySelectorAll('.copy')) {
       button.addEventListener('click', async () => {
+        if (!button.dataset.copy) return;
+        const originalText = button.textContent;
         await navigator.clipboard.writeText(button.dataset.copy);
         button.textContent = 'Copied';
-        setTimeout(() => { button.textContent = 'Copy URL'; }, 1200);
+        setTimeout(() => { button.textContent = originalText; }, 1200);
       });
     }
     const workspaceKey = 'open-bounty-radar-workbench';
