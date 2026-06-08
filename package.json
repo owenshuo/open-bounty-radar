@@ -1,6 +1,6 @@
 {
   "name": "open-bounty-radar",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "A CLI radar for discovering and monitoring paid open-source issues and bounty-style pull request opportunities.",
   "type": "module",
   "homepage": "https://github.com/owenshuo/open-bounty-radar#readme",
