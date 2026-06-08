@@ -143,3 +143,24 @@ test('skips candidates when comments flag bounty payment risk', () => {
   assert.equal(analysis.action, 'skip');
   assert.ok(analysis.riskTags.some((item) => item.name === 'payment-risk' && item.severity === 'high'));
 });
+
+test('skips candidates when comments show the bounty was already hired or paid', () => {
+  const analysis = analyzeCandidate(
+    candidate({
+      bountySignals: {
+        commentSignals: {
+          interestCount: 0,
+          proposalCount: 0,
+          reviewerActivity: false,
+          fixedOrClosing: false,
+          alreadyAssignedOrPaid: true,
+        },
+      },
+    }),
+    {text: 'Steps to reproduce: open the page. Expected behavior: it works. Actual behavior: it fails.'},
+  );
+
+  assert.equal(analysis.recommendation, 'skip');
+  assert.equal(analysis.action, 'skip');
+  assert.ok(analysis.riskTags.some((item) => item.name === 'already-assigned-or-paid' && item.severity === 'high'));
+});

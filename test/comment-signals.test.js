@@ -48,3 +48,22 @@ test('detects bounty payment risk comments', () => {
   assert.equal(signals.paymentRisk, true);
   assert.equal(signals.examples[0].matched.includes('payment-risk'), true);
 });
+
+test('detects already assigned or payout-processing comments', () => {
+  const signals = analyzeIssueComments([
+    {body: "I'm going with @dmkt9's alternative solution on this one.", user: {login: 'maintainer'}},
+    {body: 'Then I think we can close this issue after processing the payment. @dmkt9 was previously hired on this.', user: {login: 'c-plus'}},
+    {body: 'Payment Summary: Contributor: @dmkt9 paid $250 via Upwork.', user: {login: 'manager'}},
+    {body: 'Accepted the offer, thanks.', user: {login: 'contributor'}},
+  ]);
+
+  assert.equal(signals.alreadyAssignedOrPaid, true);
+  assert.equal(signals.fixedOrClosing, true);
+  assert.ok(signals.examples.some((example) => example.matched.includes('already-assigned-or-paid')));
+});
+
+test('detects no longer reproducible comments as closing signals', () => {
+  const signals = analyzeIssueComments([{body: 'I checked again and this is no longer reproducible.', user: {login: 'contributor'}}]);
+
+  assert.equal(signals.fixedOrClosing, true);
+});

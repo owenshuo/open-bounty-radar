@@ -30,8 +30,27 @@ const FIXED_PATTERNS = [
   /\bthis (?:is|was) fixed\b/i,
   /\bfixed in\b/i,
   /\bclosing as requested\b/i,
+  /\bcan close this issue\b/i,
   /\bthis has been resolved\b/i,
   /\bresolved by\b/i,
+  /\bno longer reproducible\b/i,
+  /\bnot reproducible\b/i,
+  /\bunable to reproduce\b/i,
+  /\bcan(?:not|'t|’t) reproduce\b/i,
+];
+
+const ALREADY_ASSIGNED_OR_PAID_PATTERNS = [
+  /\bpreviously hired\b/i,
+  /\bwas hired\b/i,
+  /\bhas been hired\b/i,
+  /\bgoing with @[\w-]+(?:'s|’s)?\b/i,
+  /\bpayment summary\b/i,
+  /\bpaid \$?\d+/i,
+  /\bpaid via upwork\b/i,
+  /\bdue \$?\d+ via\b/i,
+  /\bprocessing the payment\b/i,
+  /\baccept(?:ed)? the (?:job|offer)\b/i,
+  /\baccepted (?:the )?offer\b/i,
 ];
 
 const PAYMENT_RISK_PATTERNS = [
@@ -61,6 +80,7 @@ export function analyzeIssueComments(comments = []) {
     proposalCount: 0,
     reviewerActivity: false,
     fixedOrClosing: false,
+    alreadyAssignedOrPaid: false,
     paymentRisk: false,
     examples: [],
   };
@@ -84,6 +104,10 @@ export function analyzeIssueComments(comments = []) {
     if (!proposalMatched && matchesAny(body, FIXED_PATTERNS)) {
       signals.fixedOrClosing = true;
       matched.push('fixed-or-closing');
+    }
+    if (matchesAny(body, ALREADY_ASSIGNED_OR_PAID_PATTERNS)) {
+      signals.alreadyAssignedOrPaid = true;
+      matched.push('already-assigned-or-paid');
     }
     if (matchesAny(body, PAYMENT_RISK_PATTERNS)) {
       signals.paymentRisk = true;
