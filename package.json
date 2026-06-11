@@ -12,7 +12,7 @@
     "url": "https://github.com/owenshuo/open-bounty-radar/issues"
   },
   "bin": {
-    "open-bounty-radar": "./bin/open-bounty-radar.js"
+    "open-bounty-radar": "bin/open-bounty-radar.js"
   },
   "files": [
     "bin",
