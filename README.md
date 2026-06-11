@@ -2,6 +2,7 @@
 
 [![Node.js >=20](https://img.shields.io/badge/node-%3E%3D20-116149)](package.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-315f9f)](LICENSE)
+[![npm](https://img.shields.io/npm/v/open-bounty-radar?color=116149)](https://www.npmjs.com/package/open-bounty-radar)
 [![CI](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/owenshuo/open-bounty-radar/actions/workflows/ci.yml)
 [![Release gate](https://img.shields.io/badge/release%20gate-release%3Acheck-315f9f)](docs/release.md)
 [![Live Dashboard](https://img.shields.io/badge/live-dashboard-116149)](https://owenshuo.github.io/open-bounty-radar/live/discovery-dashboard.html)
