@@ -35,6 +35,24 @@ npm run watch:example
 - No secrets, tokens, wallet addresses, or private bounty notes are present.
 - `npm pack --dry-run` output excludes reports, local config, and tests through `.npmignore`.
 
+## npm Publishing
+
+The package is shaped as a CLI through the `bin` field and can be published to npm after the release check passes.
+
+```bash
+npm whoami
+npm pack --dry-run
+npm publish
+```
+
+`prepublishOnly` runs `npm run release:check` again before publishing, so a stale or broken package should fail locally before it reaches the registry.
+
+After publishing, verify the CLI entrypoint:
+
+```bash
+npx open-bounty-radar --help
+```
+
 ## Suggested Tag Flow
 
 ```bash
@@ -42,8 +60,6 @@ git status
 git tag v0.1.0
 git push origin v0.1.0
 ```
-
-Publishing to npm is optional. The package is already shaped as a CLI through the `bin` field.
 
 ## Suggested GitHub Release Notes
 

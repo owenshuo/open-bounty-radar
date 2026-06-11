@@ -74,6 +74,26 @@ Suggested repository topics: `open-source`, `bounty`, `github`, `cli`, `develope
 
 ## Quick Start
 
+Run without installing:
+
+```bash
+npx open-bounty-radar init
+npx open-bounty-radar doctor
+npx open-bounty-radar validate
+npx open-bounty-radar radar
+```
+
+Or install the CLI globally:
+
+```bash
+npm install -g open-bounty-radar
+open-bounty-radar init
+open-bounty-radar doctor
+open-bounty-radar radar
+```
+
+To work from the source repository:
+
 ```bash
 git clone https://github.com/owenshuo/open-bounty-radar.git
 cd open-bounty-radar
@@ -84,7 +104,7 @@ npm run validate
 npm run radar
 ```
 
-`npm run init` creates local config files, then `npm run radar` reads `bounty-radar.json` and runs both configured jobs:
+`init` creates local config files, then `radar` reads `bounty-radar.json` and runs both configured jobs:
 
 - scan open bounty candidates
 - watch already-submitted pull requests
@@ -495,6 +515,13 @@ npm run release:check
 ```
 
 It runs tests, example validation, the offline demo scan, package audit, and `git diff --check`.
+
+For npm publishing, verify the package contents first:
+
+```bash
+npm pack --dry-run
+npm publish
+```
 
 ## Scoring
 

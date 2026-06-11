@@ -14,6 +14,19 @@
   "bin": {
     "open-bounty-radar": "./bin/open-bounty-radar.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "schema",
+    "examples",
+    "docs",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    ".env.example"
+  ],
   "scripts": {
     "init": "node ./bin/open-bounty-radar.js init",
     "radar": "node ./bin/open-bounty-radar.js radar",
@@ -39,6 +52,7 @@
     "watch-dashboard:example": "node ./bin/open-bounty-radar.js watch --config ./examples/watchlist.json --out ./reports/pr-watch.md --json ./reports/pr-watch.json --html ./reports/pr-watch.html --watch-dashboard ./reports/watch-dashboard.html",
     "scan:notify": "node ./bin/open-bounty-radar.js scan --out ./reports/bounty-report.md --json ./reports/bounty-report.json --html ./reports/bounty-report.html --state ./reports/radar-state.json --notify",
     "watch:notify": "node ./bin/open-bounty-radar.js watch --out ./reports/pr-watch.md --json ./reports/pr-watch.json --html ./reports/pr-watch.html --state ./reports/radar-state.json --notify",
+    "prepublishOnly": "npm run release:check",
     "test": "node --test"
   },
   "keywords": [
@@ -53,8 +67,11 @@
     "cli",
     "open-source"
   ],
-  "author": "",
+  "author": "owenshuo",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
