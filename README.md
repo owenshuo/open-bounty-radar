@@ -152,6 +152,69 @@ Then open `reports/demo-dashboard.html`. The fixture data lives in `examples/fix
 
 ![Open Bounty Radar demo dashboard](docs/assets/demo-dashboard.png)
 
+
+
+## Workflow Examples
+
+The following examples show how to evaluate scan output and decide on a responsible pull request, using the offline fixture data so you can reproduce them without a GitHub token.
+
+### Example 1: act-now candidate (low competition, clear fix)
+
+From the fixture data in `examples/fixtures/demo-listings.json`:
+
+```json
+{
+  "githubIssueUrl": "https://github.com/example/automation-platform/issues/101",
+  "title": "Add retry-aware webhook delivery for failed automation jobs",
+  "amount": 750,
+  "pullRequestCount": 0
+}
+```
+
+**Why this is act-now:**
+- `pullRequestCount: 0` — no competing PRs
+- The issue description gives clear reproduction steps and expected behavior
+- The fix is a single, self-contained feature (retry scheduling)
+
+**Next step:** Clone the repo, write the fix, open a PR. See the [Responsible Contribution Guide](docs/responsible-contribution.md) before submitting.
+
+### Example 2: manual-review candidate (moderate competition, needs judgment)
+
+```json
+{
+  "githubIssueUrl": "https://github.com/example/devtools/issues/42",
+  "title": "Improve CLI config validation and JSON error output",
+  "amount": 300,
+  "pullRequestCount": 1
+}
+```
+
+**Why this needs manual review:**
+- One competing PR is already open — check whether it fully addresses the issue before submitting
+- The task involves user-facing output formatting; verify the existing PR handles all error cases
+- A partial or alternative approach may still be valuable if the existing PR misses something
+
+**Next step:** Read the existing PR, verify it against the acceptance criteria in the issue, then decide to either submit an alternative or help improve the existing one. See the [Pull Request Quality Checklist](docs/pr-quality-checklist.md).
+
+### Example 3: watch candidate (high competition or special requirements)
+
+```json
+{
+  "githubIssueUrl": "https://github.com/example/mobile-suite/issues/77",
+  "title": "Investigate iOS-only rendering issue with paid workspace",
+  "amount": 1200,
+  "pullRequestCount": 3
+}
+```
+
+**Why this is watch — not act-now:**
+- Multiple competing PRs already open
+- Requires paid workspace and iOS hardware for local reproduction
+- The high bounty reflects the difficulty, not the likelihood of a quick win
+
+**Next step:** Monitor this issue for changes. If a PR closes without full resolution, the issue may reopen and become a better target later. Use `npm run watch` to track it.
+
+For a full decision-making framework, read the [Responsible Contribution Guide](docs/responsible-contribution.md) and the [Scoring Guide](docs/scoring-guide.md).
 ## Guides
 
 - [Configuration Guide](docs/configuration.md)
